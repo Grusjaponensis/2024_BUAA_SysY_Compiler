@@ -1,4 +1,4 @@
-#！/bin/bash
+#!/bin/bash
 
 rm -f Compiler.zip error.txt lexer.txt
 

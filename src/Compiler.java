@@ -24,8 +24,7 @@ public class Compiler {
             try {
                 Token token = lexer.peek();
                 while (token != null) {
-                    lexerOutput.append(token);
-                    lexerOutput.append("\n");
+                    lexerOutput.append(token).append("\n");
                     lexer.nextToken();
                     token = lexer.peek();
                 }

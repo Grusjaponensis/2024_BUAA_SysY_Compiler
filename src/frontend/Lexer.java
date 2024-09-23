@@ -57,46 +57,37 @@ public class Lexer {
             while (pos < length && Character.isWhitespace(input.charAt(pos))) {
                 // count line numbers and reset columnNumber
                 if (input.charAt(pos) == '\n') {
-                    line++;
-                    col = 1;
+                    newline();
                 }
-                pos++;
-                col++;
+                advance();
             }
 
             // skip comments
             if (pos < length && input.charAt(pos) == '/') {
                 if (pos + 1 < length && input.charAt(pos + 1) == '/') {
                     // single line comment
-                    pos += 2;
-                    col += 2;
+                    advance(2); // skip "//"
                     while (pos < length && input.charAt(pos) != '\n') {
-                        pos++;
-                        col++;
+                        advance();
                     }
                     continue;
                 } else if (pos + 1 < length && input.charAt(pos + 1) == '*') {
                     // multi-line comment
-                    pos += 2;
-                    col += 2;
+                    advance(2);
                     while (pos + 1 < length && !(input.charAt(pos) == '*' && input.charAt(pos + 1) == '/')) {
                         if (input.charAt(pos) == '\n') {
-                            line++;
-                            col = 1;
+                            newline();
                         }
-                        pos++;
-                        col++;
+                        advance();
                     }
                     // Unterminated multi-line comment
                     if (pos + 1 >= length) {
                         return null;
                     }
-                    pos += 2; // skip '*/'
-                    col += 2;
+                    advance(2); // skip "*/"
                     continue;
                 } else {
-                    pos++;
-                    col++;
+                    advance();
                     return new Operator(TokenType.DivideOperator, line, col - 1, "/");
                 }
             }
@@ -147,8 +138,7 @@ public class Lexer {
         int startCol = col;
         while (pos < length && Character.isDigit(input.charAt(pos))) {
             builder.append(input.charAt(pos));
-            pos++;
-            col++;
+            advance();
         }
         return new IntegerLiteral(line, startCol, builder.toString());
     }
@@ -166,8 +156,7 @@ public class Lexer {
             currentChar = input.charAt(pos);
             if ((Character.isLetter(currentChar) || currentChar == '_' || Character.isDigit(currentChar))) {
                 builder.append(currentChar);
-                pos++;
-                col++;
+                advance();
             } else {
                 break;
             }
@@ -190,8 +179,7 @@ public class Lexer {
     }
 
     /**
-     * Parses a single character symbol from the input, checking if it is defined in the set of
-     * single character tokens and returning the corresponding Token object.
+     * Parses a symbol from the input, returning the corresponding Token object.
      *
      * @return The {@code Token} representation of the single character symbol.
      */
@@ -202,18 +190,18 @@ public class Lexer {
 
         char currentChar = input.charAt(pos);
 
+        // first check for double-character symbols
         if (pos + 1 < input.length()) {
             String twoCharSymbol = "" + currentChar + input.charAt(pos + 1);
             if (doubleCharTokens.containsKey(twoCharSymbol)) {
-                pos += 2;
-                col += 2;
+                advance(2);
                 return new Operator(doubleCharTokens.get(twoCharSymbol), line, col - 2, twoCharSymbol);
             }
         }
 
+        // then check for single-character symbols
         if (singleCharTokens.containsKey(currentChar)) {
-            pos++;
-            col++;
+            advance();
             switch (currentChar) {
                 case '(', ')', '[', ']', '{', '}' -> {
                     return new Delimiter(
@@ -233,11 +221,13 @@ public class Lexer {
             }
         }
 
+        // handle special cases of '&' and '|'
         if (currentChar == '&' || currentChar == '|') {
-            pos++;
-            col++;
+            advance();
             String value = currentChar + String.valueOf(currentChar);
-            ErrorCollector.getInstance().addError(new CompileError(line, ErrorType.IllegalSymbol));
+            ErrorCollector.getInstance().addError(
+                    new CompileError(line, ErrorType.IllegalSymbol, "'" + currentChar + "'")
+            );
             return new Operator(doubleCharTokens.get(value), line, col - 2, value);
         }
 
@@ -256,8 +246,7 @@ public class Lexer {
             char nextChar = input.charAt(pos + 1);
             if (nextChar == '\'') {
                 // empty char literal
-                pos++;
-                col++;
+                advance();
                 throw new RuntimeException("empty character constant");
             } else if (nextChar == '\\') {
                 // escape character
@@ -266,14 +255,12 @@ public class Lexer {
                     if (pos + 3 < length && input.charAt(pos + 3) != '\'') {
                         throw new RuntimeException("missing terminating ' character");
                     }
-                    pos += 4;
-                    col += 4;
+                    advance(4);
                     return new CharLiteral(line, col - 3, Character.toString(nextChar) + nextChar2);
                 }
                 throw new RuntimeException("missing terminating ' character");
             } else {
-                pos += 3;
-                col += 3;
+                advance(3);
                 return new CharLiteral(line, col - 2, Character.toString(nextChar));
             }
         }
@@ -288,8 +275,7 @@ public class Lexer {
      */
     private Token parseStringLiteral() {
         StringBuilder builder = new StringBuilder();
-        pos++;
-        col++;
+        advance();
         char c;
         int length = input.length(), startCol = col;
 
@@ -299,8 +285,7 @@ public class Lexer {
             }
             c = input.charAt(pos);
             if (c == '"') {
-                pos++;
-                col++;
+                advance();
                 break;
             }
             if (c == '\\') {
@@ -319,17 +304,42 @@ public class Lexer {
                         case '0' -> builder.append('\0');
                         default -> throw new RuntimeException("invalid escape sequence");
                     }
-                    pos += 2;
-                    col += 2;
+                    advance(2);
                     continue;
                 }
                 throw new RuntimeException("missing terminating '\"' character");
             }
             builder.append(c);
-            pos++;
-            col++;
+            advance();
         }
         return new StringLiteral(line, startCol, builder.toString());
+    }
+
+    /**
+     * Advances the position and column by 1
+     */
+    private void advance() {
+        pos++;
+        col++;
+    }
+
+    /**
+     * Advances the position and column by a specified number {@code n}
+     *
+     * @param n the number of characters to advance the position and column by
+     */
+    private void advance(int n) {
+        pos += n;
+        col += n;
+    }
+
+    /**
+     * increments the line number by 1 and resets the column number
+     * to 1
+     */
+    private void newline() {
+        line++;
+        col = 1;
     }
 
     private static final HashMap<String, TokenType> keywordMap = new HashMap<>() {
