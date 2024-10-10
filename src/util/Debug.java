@@ -1,10 +1,10 @@
 package util;
 
 public class Debug {
-    public static final boolean DEBUG_STATE = false;
+    public static final boolean DEBUG_STATE = true;
 
-    public static final boolean STAGE_LEXER = true;
-    public static final boolean STAGE_PARSER = false;
+    public static final boolean STAGE_LEXER = false;
+    public static final boolean STAGE_PARSER = true;
 
     public static final String TERM_RESET = "\u001B[0m";
     public static final String TERM_RED = "\u001B[1;31m";

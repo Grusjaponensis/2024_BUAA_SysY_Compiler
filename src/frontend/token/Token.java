@@ -21,6 +21,8 @@ public abstract class Token {
 
     public String getContent() { return content; }
 
+    public boolean isTypeOf(TokenType type) { return this.type == type; }
+
     @Override
     public String toString() {
         if (Debug.DEBUG_STATE) {

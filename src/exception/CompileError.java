@@ -28,7 +28,7 @@ public class CompileError extends Throwable implements Comparable<CompileError> 
         if (DEBUG_STATE) {
             return TERM_RED + "error: " + TERM_RESET +
                     TERM_BOLD + "In line " + line + ": " +
-                    type.getMessage() + " " + message +
+                    type.getMessage() + ", " + message +
                     " [" + type + "]" + TERM_RESET + "\n";
         }
         return line + " " + type.getType() + "\n";

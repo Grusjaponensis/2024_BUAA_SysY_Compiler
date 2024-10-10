@@ -1,6 +1,10 @@
 #!/bin/bash
 
-rm -f Compiler.zip error.txt lexer.txt
+if [ -f "Compiler.zip" ]; then
+  rm "Compiler.zip"
+fi
+
+find . -name "*.txt" ! -name "testfile.txt" -exec rm {} \;
 
 cd src/
 
