@@ -29,6 +29,7 @@ public class BlockNode extends ASTNode {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<Block>\n");

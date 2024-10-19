@@ -1,8 +1,8 @@
 package frontend.ast;
 
-import exception.CompileError;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class AddExpNode extends ASTNode {
         operators.add(TokenType.PlusOperator);
     }
 
-    public void parse() throws CompileError {
+    public void parse() {
         MulExpNode mulExpNode = new MulExpNode(tokens, depth + 1);
         mulExpNodes.add(mulExpNode);
         mulExpNode.parse();
@@ -34,6 +34,10 @@ public class AddExpNode extends ASTNode {
             mulExpNodes.add(mulExpNode);
             mulExpNode.parse();
         }
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+
     }
 
     @Override
@@ -47,9 +51,6 @@ public class AddExpNode extends ASTNode {
             }
             b.append("\n");
             return b.toString();
-        }
-        if (mulExpNodes.isEmpty()) {
-            throw new RuntimeException("Fuck you bitch!!!" + mulExpNodes);
         }
         b.append(mulExpNodes.get(0)).append("<AddExp>\n");
         for (int i = 1; i < mulExpNodes.size(); i++) {

@@ -1,8 +1,8 @@
 package frontend.ast;
 
-import exception.CompileError;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class MulExpNode extends ASTNode {
         operators.add(null);
     }
 
-    public void parse() throws CompileError {
+    public void parse() {
         UnaryExpNode unaryExpNode = new UnaryExpNode(tokens, depth + 1);
         unaryExpNodes.add(unaryExpNode);
         unaryExpNode.parse();
@@ -37,6 +37,10 @@ public class MulExpNode extends ASTNode {
             unaryExpNodes.add(unaryExpNode);
             unaryExpNode.parse();
         }
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+
     }
 
     @Override

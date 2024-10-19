@@ -2,6 +2,7 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -23,9 +24,14 @@ public class MainFuncDefNode extends ASTNode {
         body.parse();
     }
 
+    public void analyzeSemantic(SymbolTable table) {
+
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             b.append("  ".repeat(depth)).append("<MainFuncDef>\n").append(body);
             return b.toString();

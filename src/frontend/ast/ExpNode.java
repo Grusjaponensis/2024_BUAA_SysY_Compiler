@@ -1,7 +1,7 @@
 package frontend.ast;
 
-import exception.CompileError;
 import frontend.token.TokenList;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -14,9 +14,13 @@ public class ExpNode extends ASTNode {
         super(tokens, depth);
     }
 
-    public void parse() throws CompileError {
+    public void parse() {
         addExp = new AddExpNode(tokens, depth + 1);
         addExp.parse();
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+        addExp.analyzeSemantic(table);
     }
 
     @Override

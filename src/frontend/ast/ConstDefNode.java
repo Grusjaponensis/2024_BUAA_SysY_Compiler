@@ -3,6 +3,8 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.Const;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -14,6 +16,7 @@ public class ConstDefNode extends ASTNode {
     private Ident identifier;
     private ConstExpNode constExpNode;
     private ConstInitValNode constInitValNode;
+    private int lineNum;
 
     public ConstDefNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -25,6 +28,7 @@ public class ConstDefNode extends ASTNode {
             throw new RuntimeException("Identifier expected, got: " + token.getType());
         }
         identifier = new Ident(token.getContent());
+        lineNum = token.getLineNumber();
         tokens.advance();
 
         if (tokens.get().isTypeOf(TokenType.LBracket)) {
@@ -39,9 +43,20 @@ public class ConstDefNode extends ASTNode {
         constInitValNode.parse();
     }
 
+    public void analyzeSemantic(SymbolTable table, BType type) {
+        table.insert(new Const(lineNum, identifier.name(), type.getType(), constExpNode != null));
+
+        if (constExpNode != null) {
+            constExpNode.analyzeSemantic(table);
+        }
+
+        constInitValNode.analyzeSemantic(table);
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<ConstDef> ").append(identifier);

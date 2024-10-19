@@ -1,11 +1,9 @@
 package frontend.ast;
 
-import exception.CompileError;
-import exception.ErrorCollector;
-import exception.ErrorType;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -19,7 +17,7 @@ public class LValNode extends ASTNode {
         super(tokens, depth);
     }
 
-    public void parse() throws CompileError {
+    public void parse() {
         Token token = tokens.get();
         if (!token.isTypeOf(TokenType.Identifier)) {
             throw new RuntimeException("Identifier expected, got: " + token.getType());
@@ -29,24 +27,30 @@ public class LValNode extends ASTNode {
         if (tokens.get().isTypeOf(TokenType.LBracket)) {
             tokens.advance();
             expNode = new ExpNode(tokens, depth + 1);
-            try {
-                expNode.parse();
-            } catch (CompileError e) {
-                ErrorCollector.getInstance().addError(e);
-            }
-            if (!tokens.get().isTypeOf(TokenType.RBracket)) {
-                throw new CompileError(
-                       tokens.prev().getLineNumber(), ErrorType.MissRbrack, "got: " + token.getType()
-                );
-            } else {
-                tokens.advance();
-            }
+            expNode.parse();
+            expect(TokenType.RBracket, "]");
+            // if (!tokens.get().isTypeOf(TokenType.RBracket)) {
+            //     errors.add(new CompileError(
+            //             tokens.prev().getLineNumber(), ErrorType.MissRbrack, "got: " + token.getType()
+            //     ));
+            // } else {
+            //     tokens.advance();
+            // }
         }
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+        // check before use
+        if (!table.hasSymbol(identifier.name())) {
+            // TODO: error handling
+        }
+        expNode.analyzeSemantic(table);
     }
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<LVal> ").append(identifier).append("\n");

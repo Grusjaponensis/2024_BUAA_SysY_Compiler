@@ -1,9 +1,9 @@
 package frontend.ast;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.Func;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -21,23 +21,23 @@ public class FuncCallParamsNode extends ASTNode {
 
     public void parse() {
         ExpNode expNode = new ExpNode(tokens, depth + 1);
-        try {
-            expNode.parse();
-        } catch (CompileError e) {
-            ErrorCollector.getInstance().addError(e);
-        }
+        expNode.parse();
         params.add(expNode);
 
         while (tokens.get().isTypeOf(TokenType.Comma)) {
             tokens.advance();
             expNode = new ExpNode(tokens, depth + 1);
-            try {
-                expNode.parse();
-            } catch (CompileError e) {
-                ErrorCollector.getInstance().addError(e);
-            }
+            expNode.parse();
             params.add(expNode);
         }
+    }
+
+    public void analyzeSemantic(SymbolTable table, String name) {
+        // check the number of parameters
+        if (((Func) table.find(name)).getParamsNum() != params.size()) {
+            // TODO: error handling
+        }
+        params.forEach(exp -> exp.analyzeSemantic(table));
     }
 
     @Override

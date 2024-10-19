@@ -1,7 +1,5 @@
 package frontend.ast;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
 import util.Debug;
@@ -26,11 +24,7 @@ public class RelExpNode extends ASTNode {
 
     public void parse() {
         AddExpNode addExpNode = new AddExpNode(tokens, depth + 1);
-        try {
-            addExpNode.parse();
-        } catch (CompileError e) {
-            ErrorCollector.getInstance().addError(e);
-        }
+        addExpNode.parse();
         addExpNodes.add(addExpNode);
 
         while (tokens.get().isTypeOf(TokenType.LTOperator) ||
@@ -40,11 +34,7 @@ public class RelExpNode extends ASTNode {
             operators.add(tokens.get().getType());
             tokens.advance();
             addExpNode = new AddExpNode(tokens, depth + 1);
-            try {
-                addExpNode.parse();
-            } catch (CompileError e) {
-                ErrorCollector.getInstance().addError(e);
-            }
+            addExpNode.parse();
             addExpNodes.add(addExpNode);
         }
     }

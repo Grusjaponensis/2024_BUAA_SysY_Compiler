@@ -3,6 +3,7 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -41,9 +42,14 @@ public class ConstDeclNode extends ASTNode {
         expect(TokenType.Semicolon, ";");
     }
 
+    public void analyzeSemantic(SymbolTable table) {
+        constDefNodes.forEach(constDef -> constDef.analyzeSemantic(table, bType));
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<ConstDecl> ").append("const ").append(bType).append("\n");

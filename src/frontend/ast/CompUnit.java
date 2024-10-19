@@ -3,6 +3,7 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class CompUnit extends ASTNode {
     private final List<DeclNode> declNodes = new ArrayList<>();
     private final List<FuncDefNode> funcDefNodes = new ArrayList<>();
     private MainFuncDefNode mainFuncDefNode;
+    private final SymbolTable symbolTable = new SymbolTable(1);
 
     public CompUnit(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -50,6 +52,12 @@ public class CompUnit extends ASTNode {
         return token.isTypeOf(TokenType.ConstKeyword) ||
                 token.isTypeOf(TokenType.IntKeyword) ||
                 token.isTypeOf(TokenType.CharKeyword);
+    }
+
+    public void analyzeSemantics() {
+        declNodes.forEach(decl -> decl.analyzeSemantic(symbolTable));
+        funcDefNodes.forEach(funcDef -> funcDef.analyzeSemantic(symbolTable));
+        mainFuncDefNode.analyzeSemantic(symbolTable);
     }
 
     @Override

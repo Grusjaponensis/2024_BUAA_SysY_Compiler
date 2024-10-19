@@ -1,6 +1,5 @@
 package frontend.ast;
 
-import exception.CompileError;
 import frontend.ast.stmt.*;
 import frontend.token.Token;
 import frontend.token.TokenList;
@@ -37,9 +36,7 @@ public class StmtNode extends ASTNode {
                     // Field is not empty
                     // Since Exp consists of LVal, so first parse Exp
                     ExpNode exp = new ExpNode(tokens, depth + 1);
-                    try {
-                        exp.parse();
-                    } catch (CompileError ignored) {}
+                    exp.parse();
                     if (tokens.get().isTypeOf(TokenType.AssignOperator)) {
                         // LVal assign statement
                         tokens.setIndex(index);
@@ -52,7 +49,6 @@ public class StmtNode extends ASTNode {
                         stmt.parse();
                     }
                 } else {
-                    // empty Exp
                     stmt = new ExpStmt(tokens, depth + 1);
                 }
             }

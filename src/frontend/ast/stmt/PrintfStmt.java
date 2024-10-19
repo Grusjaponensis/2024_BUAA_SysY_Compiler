@@ -1,7 +1,5 @@
 package frontend.ast.stmt;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.ast.StringConst;
@@ -42,11 +40,7 @@ public class PrintfStmt extends ASTNode implements Statement {
             while (tokens.get().isTypeOf(TokenType.Comma)) {
                 tokens.advance();
                 ExpNode param = new ExpNode(tokens, depth + 1);
-                try {
-                    param.parse();
-                } catch (CompileError e) {
-                    ErrorCollector.getInstance().addError(e);
-                }
+                param.parse();
                 params.add(param);
             }
         }
@@ -57,6 +51,7 @@ public class PrintfStmt extends ASTNode implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             b.append("  ".repeat(depth)).append("<PrintfStmt>\n")
                     .append("  ".repeat(depth + 1)).append(formattedString).append("\n");

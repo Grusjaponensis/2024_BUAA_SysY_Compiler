@@ -3,6 +3,8 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
+import symbol.Var;
 import util.Debug;
 
 /**
@@ -17,6 +19,7 @@ public class VarDefNode extends ASTNode {
     private Ident identifier;
     private ConstExpNode constExp;
     private InitValNode initVal;
+    private int lineNum;
 
     public VarDefNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -29,7 +32,9 @@ public class VarDefNode extends ASTNode {
             throw new RuntimeException("Identifier expected, got: " + token.getType());
         }
         identifier = new Ident(token.getContent());
+        lineNum = token.getLineNumber();
         tokens.advance();
+
         if (tokens.get().isTypeOf(TokenType.LBracket)) {
             // array like init
             isArray = true;
@@ -49,11 +54,21 @@ public class VarDefNode extends ASTNode {
         }
     }
 
-    public Type getType() { return type; }
+    public void analyzeSemantic(SymbolTable table, BType type) {
+        table.insert(new Var(lineNum, identifier.name(), type.getType(), constExp != null));
+
+        if (constExp != null) {
+            constExp.analyzeSemantic(table);
+        }
+        if (initVal != null) {
+            initVal.analyzeSemantic(table);
+        }
+    }
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<VarDef> ");

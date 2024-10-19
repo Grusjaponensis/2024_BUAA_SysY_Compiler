@@ -24,6 +24,7 @@ public class ContinueStmt extends ASTNode implements Statement {
 
     @Override
     public String toString() {
+        addErrors();
         if (Debug.DEBUG_STATE) {
             return "  ".repeat(depth) + "<ContinueStmt> continue\n";
         }

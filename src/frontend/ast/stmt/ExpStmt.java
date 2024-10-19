@@ -1,7 +1,5 @@
 package frontend.ast.stmt;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.token.TokenList;
@@ -25,11 +23,7 @@ public class ExpStmt extends ASTNode implements Statement {
     public void parse() {
         if (isExpr(tokens.get().getType())) {
             exp = new ExpNode(tokens, depth + 1);
-            try {
-                exp.parse();
-            } catch (CompileError e) {
-                ErrorCollector.getInstance().addError(e);
-            }
+            exp.parse();
         }
         expect(TokenType.Semicolon, ";");
     }
@@ -47,6 +41,7 @@ public class ExpStmt extends ASTNode implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             b.append("  ".repeat(depth)).append("<ExpStmt>\n");
             if (exp != null) {

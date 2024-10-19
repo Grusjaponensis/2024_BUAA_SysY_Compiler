@@ -1,7 +1,7 @@
 package util;
 
 public class Debug {
-    public static final boolean DEBUG_STATE = true;
+    public static final boolean DEBUG_STATE = false;
 
     public static final boolean STAGE_LEXER = false;
     public static final boolean STAGE_PARSER = true;

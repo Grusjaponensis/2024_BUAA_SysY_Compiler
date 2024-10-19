@@ -1,7 +1,5 @@
 package frontend.ast.stmt;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.ast.LValNode;
@@ -34,11 +32,7 @@ public class LValAssignStmt extends ASTNode implements Statement {
     @Override
     public void parse() {
         lVal = new LValNode(tokens, depth + 1);
-        try {
-            lVal.parse();
-        } catch (CompileError e) {
-            ErrorCollector.getInstance().addError(e);
-        }
+        lVal.parse();
 
         expect(TokenType.AssignOperator, "=");
 
@@ -56,11 +50,7 @@ public class LValAssignStmt extends ASTNode implements Statement {
         } else {
             type = Type.Exp;
             exp = new ExpNode(tokens, depth + 1);
-            try {
-                exp.parse();
-            } catch (CompileError e) {
-                ErrorCollector.getInstance().addError(e);
-            }
+            exp.parse();
         }
         expect(TokenType.Semicolon, ";");
     }
@@ -68,6 +58,7 @@ public class LValAssignStmt extends ASTNode implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             b.append("  ".repeat(depth)).append("<LValAssign>\n");
             switch (type) {

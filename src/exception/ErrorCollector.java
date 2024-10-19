@@ -2,10 +2,12 @@ package exception;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 public class ErrorCollector {
     private static final ErrorCollector instance = new ErrorCollector();
     private final ArrayList<CompileError> errors = new ArrayList<>();
+    private final HashSet<CompileError> errorsSet = new HashSet<>();
 
     public static ErrorCollector getInstance() { return instance; }
 
@@ -15,11 +17,14 @@ public class ErrorCollector {
      * @param error the compile error to be added
      */
     public void addError(CompileError error) {
-        errors.add(error);
+        if (!errorsSet.contains(error)) {
+            errors.add(error);
+            errorsSet.add(error);
+        }
     }
 
     /**
-     * Checks if there are any errors collected.
+     * Checks if there are any errors been collected.
      *
      * @return {@code true} if there are errors
      */

@@ -1,6 +1,7 @@
 package frontend.ast;
 
 import frontend.token.TokenType;
+import symbol.ValueType;
 import util.Debug;
 
 /**
@@ -10,6 +11,14 @@ public record FuncType(TokenType type) {
     public FuncType {
         if (!(type == TokenType.IntKeyword || type == TokenType.CharKeyword || type == TokenType.VoidKeyword)) {
             throw new RuntimeException("Invalid function type: " + type);
+        }
+    }
+
+    public ValueType getType() {
+        switch (type) {
+            case IntKeyword -> { return ValueType.Int; }
+            case CharKeyword -> { return ValueType.Char; }
+            default -> { return ValueType.Void; }
         }
     }
 

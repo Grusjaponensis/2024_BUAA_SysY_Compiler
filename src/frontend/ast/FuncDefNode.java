@@ -3,6 +3,7 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -15,6 +16,7 @@ public class FuncDefNode extends ASTNode {
     private Ident identifier;
     private FuncParamListNode paramList;
     private BlockNode body;
+    private int lineNum;
 
     public FuncDefNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -37,6 +39,7 @@ public class FuncDefNode extends ASTNode {
             throw new RuntimeException("Identifier expected, got: " + token.getType());
         }
         identifier = new Ident(token.getContent());
+        lineNum = token.getLineNumber();
         tokens.advance();
 
         // parse function params
@@ -52,9 +55,14 @@ public class FuncDefNode extends ASTNode {
         body.parse();
     }
 
+    public void analyzeSemantic(SymbolTable table) {
+        // table.insert(new Func(lineNum, identifier.name(), funcType.getType(), ));
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<FuncDef> ").append(funcType).append(" ").append(identifier).append("()\n");

@@ -1,8 +1,7 @@
 package frontend.ast;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.token.TokenList;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -17,11 +16,11 @@ public class ConstExpNode extends ASTNode {
 
     public void parse() {
         addExp = new AddExpNode(tokens, depth + 1);
-        try {
-            addExp.parse();
-        } catch (CompileError e) {
-            ErrorCollector.getInstance().addError(e);
-        }
+        addExp.parse();
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+
     }
 
     @Override

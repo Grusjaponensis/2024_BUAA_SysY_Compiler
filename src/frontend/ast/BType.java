@@ -1,6 +1,7 @@
 package frontend.ast;
 
 import frontend.token.TokenType;
+import symbol.ValueType;
 import util.Debug;
 
 /**
@@ -13,6 +14,10 @@ public record BType(TokenType type) {
         if (!(type == TokenType.CharKeyword || type == TokenType.IntKeyword)) {
             throw new RuntimeException("Invalid BType: " + type);
         }
+    }
+
+    public ValueType getType() {
+        return type == TokenType.IntKeyword ? ValueType.Int : ValueType.Char;
     }
 
     @Override

@@ -1,7 +1,5 @@
 package frontend.ast.stmt;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.token.TokenList;
@@ -26,11 +24,7 @@ public class ReturnStmt extends ASTNode implements Statement {
         expect(TokenType.ReturnKeyword, "return");
         if (isExpr(tokens.get().getType())) {
             returnExp = new ExpNode(tokens, depth + 1);
-            try {
-                returnExp.parse();
-            } catch (CompileError e) {
-                ErrorCollector.getInstance().addError(e);
-            }
+            returnExp.parse();
         }
         expect(TokenType.Semicolon, ";");
     }
@@ -48,6 +42,7 @@ public class ReturnStmt extends ASTNode implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             b.append("  ".repeat(depth)).append("<ReturnStmt>\n");
             if (returnExp != null) {

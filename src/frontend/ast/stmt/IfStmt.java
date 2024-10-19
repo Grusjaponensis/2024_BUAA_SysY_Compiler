@@ -46,6 +46,7 @@ public class IfStmt extends ASTNode implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String s = "  ".repeat(depth);
             b.append(s).append("<IfStmt>\n").append(condition).append(ifStmt);

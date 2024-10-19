@@ -24,6 +24,7 @@ public class BreakStmt extends ASTNode implements Statement {
 
     @Override
     public String toString() {
+        addErrors();
         if (Debug.DEBUG_STATE) {
             return "  ".repeat(depth) + "<BreakStmt> break\n";
         }

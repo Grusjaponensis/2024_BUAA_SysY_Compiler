@@ -1,8 +1,7 @@
 package frontend.ast;
 
-import exception.CompileError;
-import exception.ErrorType;
 import frontend.token.*;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -23,20 +22,21 @@ public class PrimaryExpNode extends ASTNode {
         super(tokens, depth);
     }
 
-    public void parse() throws CompileError{
+    public void parse() {
         Token token = tokens.get();
         if (token.isTypeOf(TokenType.LParenthesis)) {
             type = Type.Exp;
             tokens.advance();
             expNode = new ExpNode(tokens, depth + 1);
             expNode.parse();
-            if (!tokens.get().isTypeOf(TokenType.RParenthesis)) {
-                throw new CompileError(
-                        tokens.prev().getLineNumber(), ErrorType.MissRparent, "got: " + token.getType()
-                );
-            } else {
-                tokens.advance();
-            }
+            // if (!tokens.get().isTypeOf(TokenType.RParenthesis)) {
+            //     errors.add(new CompileError(
+            //             tokens.prev().getLineNumber(), ErrorType.MissRparent, "got: " + token.getType()
+            //     ));
+            // } else {
+            //     tokens.advance();
+            // }
+            expect(TokenType.RParenthesis, ")");
         } else if (token.isTypeOf(TokenType.Identifier)) {
             type = Type.LVal;
             lValNode = new LValNode(tokens, depth + 1);
@@ -52,11 +52,17 @@ public class PrimaryExpNode extends ASTNode {
         }
     }
 
-    public Type getType() { return type; }
+    public void analyzeSemantic(SymbolTable table) {
+        switch (type) {
+            case Exp -> expNode.analyzeSemantic(table);
+            case LVal -> lValNode.analyzeSemantic(table);
+        }
+    }
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             b.append("  ".repeat(depth)).append("<PrimaryExp>\n");
             switch (type) {

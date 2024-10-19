@@ -3,6 +3,7 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -40,7 +41,13 @@ public class DeclNode extends ASTNode {
         }
     }
 
-    public Type getType() { return type; }
+    public void analyzeSemantic(SymbolTable table) {
+        if (type == Type.Const) {
+            constNode.analyzeSemantic(table);
+        } else {
+            varNode.analyzeSemantic(table);
+        }
+    }
 
     @Override
     public String toString() {

@@ -1,10 +1,9 @@
 package frontend.ast;
 
-import exception.CompileError;
-import exception.ErrorCollector;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -36,20 +35,12 @@ public class InitValNode extends ASTNode {
             type = Type.MultipleExp;
             if (!tokens.get().isTypeOf(TokenType.RBrace)) {
                 ExpNode node = new ExpNode(tokens, depth + 1);
-                try {
-                    node.parse();
-                } catch (CompileError e) {
-                    ErrorCollector.getInstance().addError(e);
-                }
+                node.parse();
                 expList.add(node);
                 while (tokens.get().isTypeOf(TokenType.Comma)) {
                     tokens.advance();
                     node = new ExpNode(tokens, depth + 1);
-                    try {
-                        node.parse();
-                    } catch (CompileError e) {
-                        ErrorCollector.getInstance().addError(e);
-                    }
+                    node.parse();
                     expList.add(node);
                 }
             }
@@ -57,17 +48,21 @@ public class InitValNode extends ASTNode {
         } else {
             type = Type.SimpleExp;
             expNode = new ExpNode(tokens, depth + 1);
-            try {
-                expNode.parse();
-            } catch (CompileError e) {
-                ErrorCollector.getInstance().addError(e);
-            }
+            expNode.parse();
+        }
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+        switch (type) {
+            case SimpleExp -> expNode.analyzeSemantic(table);
+            case MultipleExp -> expList.forEach(exp -> exp.analyzeSemantic(table));
         }
     }
 
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<InitVal>\n");

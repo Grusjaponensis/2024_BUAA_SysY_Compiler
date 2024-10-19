@@ -3,6 +3,7 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -60,22 +61,23 @@ public class ConstInitValNode extends ASTNode {
         }
     }
 
+    public void analyzeSemantic(SymbolTable table) {
+        switch (type) {
+            case SingleConstExp -> constExp.analyzeSemantic(table);
+            case ArrayLike -> constExpNodes.forEach(exp -> exp.analyzeSemantic(table));
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<ConstInitVal>\n");
             switch (type) {
                 case SingleConstExp -> b.append(constExp);
-                case ArrayLike -> {
-                    if (!isBlockEmpty) {
-                        b.append(constExpNodes.get(0));
-                        for (int i = 1; i < constExpNodes.size(); i++) {
-                            b.append(constExpNodes.get(i));
-                        }
-                    }
-                }
+                case ArrayLike -> constExpNodes.forEach(b::append);
                 case StringConst -> b.append(stringConst);
             }
             return b.toString();

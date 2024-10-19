@@ -43,6 +43,7 @@ public class FuncParamNode extends ASTNode {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
             b.append(space).append("<FuncFParam> ").append(paramType).append(" ").append(identifier);

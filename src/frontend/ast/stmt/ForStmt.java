@@ -71,6 +71,7 @@ public class ForStmt extends ASTNode implements Statement {
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
+        addErrors();
         if (Debug.DEBUG_STATE) {
             b.append("  ".repeat(depth)).append("<ForStmt>\n")
                     .append(stmt1 == null ? "" : stmt1)
