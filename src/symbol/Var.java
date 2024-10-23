@@ -14,7 +14,7 @@ public class Var extends Symbol {
     private ArrayList<Integer> arrayInitVal;
 
     /**
-     * Create a <strong>non-array</strong> variable.
+     * Create a variable.
      */
     public Var(int lineNum, String name, ValueType type, boolean isConst, boolean isArray) {
         super(lineNum, name);
