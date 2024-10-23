@@ -14,7 +14,7 @@ public record FuncType(TokenType type) {
         }
     }
 
-    public ValueType getType() {
+    public ValueType valueType() {
         switch (type) {
             case IntKeyword -> { return ValueType.Int; }
             case CharKeyword -> { return ValueType.Char; }

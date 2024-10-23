@@ -3,6 +3,7 @@ package frontend.ast;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
 import symbol.SymbolTable;
+import symbol.ValueType;
 import util.Debug;
 
 /**
@@ -10,6 +11,9 @@ import util.Debug;
  */
 public class MainFuncDefNode extends ASTNode {
     private BlockNode body;
+    private SymbolTable symbolTable;
+    private int endLineNum;
+
 
     public MainFuncDefNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -22,10 +26,14 @@ public class MainFuncDefNode extends ASTNode {
         expect(TokenType.RParenthesis, ")");
         body = new BlockNode(tokens, depth + 1);
         body.parse();
+        endLineNum = tokens.prev().getLineNumber();
     }
 
     public void analyzeSemantic(SymbolTable table) {
-
+        symbolTable = new SymbolTable(table);
+        table.insertChildTable(symbolTable);
+        body.analyzeSemantic(symbolTable);
+        body.checkReturnStmt(ValueType.Int, endLineNum);
     }
 
     @Override

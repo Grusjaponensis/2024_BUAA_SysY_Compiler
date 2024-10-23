@@ -5,6 +5,7 @@ import frontend.ast.CondNode;
 import frontend.ast.StmtNode;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -40,6 +41,15 @@ public class IfStmt extends ASTNode implements Statement {
             elseStmt.parse();
         } else {
             type = Type.NoElse;
+        }
+    }
+
+    @Override
+    public void analyzeSemantic(SymbolTable table) {
+        condition.analyzeSemantic(table);
+        ifStmt.analyzeSemantic(table);
+        if (type == Type.HasElse) {
+            elseStmt.analyzeSemantic(table);
         }
     }
 

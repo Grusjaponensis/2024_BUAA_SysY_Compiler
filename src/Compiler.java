@@ -7,8 +7,11 @@ import frontend.token.Token;
 import frontend.token.TokenList;
 import util.Debug;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 public class Compiler {
@@ -24,11 +27,9 @@ public class Compiler {
         Lexer lexer = new Lexer(content);
 
         ArrayList<Token> tokens = new ArrayList<>();
-        StringBuilder lexerOutput = new StringBuilder();
         try {
             Token token = lexer.peek();
             while (token != null) {
-                lexerOutput.append(token).append("\n");
                 tokens.add(token);
                 lexer.nextToken();
                 token = lexer.peek();
@@ -36,8 +37,6 @@ public class Compiler {
         } catch (CompileError e) {
             ErrorCollector.getInstance().addError(e);
         }
-
-        System.out.println(lexerOutput);
 
         // generate AST
         Parser parser = new Parser(new TokenList(tokens));
@@ -47,8 +46,17 @@ public class Compiler {
 
         System.out.println(compUnit);
 
-        Path parserOutputFile = Path.of("parser.txt");
-        Files.writeString(parserOutputFile, compUnit.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        // semantic analysis
+        Debug.log(Debug.TERM_RED + ">>>>>>>> Semantic Analysis Output: >>>>>>>>" + Debug.TERM_RESET);
+
+        compUnit.analyzeSemantic();
+
+        String output = compUnit.output();
+        System.out.println(output);
+
+        Path symbol = Path.of("symbol.txt");
+        Files.writeString(symbol, output, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
         if (ErrorCollector.getInstance().hasErrors()) {
             Path errorFile = Path.of("error.txt");
             Files.writeString(

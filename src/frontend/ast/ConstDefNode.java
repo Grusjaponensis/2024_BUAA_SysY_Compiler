@@ -3,8 +3,8 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
-import symbol.Const;
 import symbol.SymbolTable;
+import symbol.Var;
 import util.Debug;
 
 /**
@@ -44,7 +44,7 @@ public class ConstDefNode extends ASTNode {
     }
 
     public void analyzeSemantic(SymbolTable table, BType type) {
-        table.insert(new Const(lineNum, identifier.name(), type.getType(), constExpNode != null));
+        table.insert(new Var(lineNum, identifier.name(), type.valueType(), true, constExpNode != null));
 
         if (constExpNode != null) {
             constExpNode.analyzeSemantic(table);

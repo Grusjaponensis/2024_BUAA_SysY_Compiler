@@ -226,7 +226,7 @@ public class Lexer {
             advance();
             String value = currentChar + String.valueOf(currentChar);
             ErrorCollector.getInstance().addError(
-                    new CompileError(line, ErrorType.IllegalSymbol, "'" + currentChar + "'")
+                    new CompileError(line, ErrorType.IllegalOperator, "'" + currentChar + "'")
             );
             return new Operator(doubleCharTokens.get(value), line, col - 2, value);
         }

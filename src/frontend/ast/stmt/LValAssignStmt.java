@@ -1,11 +1,16 @@
 package frontend.ast.stmt;
 
+import exception.CompileError;
+import exception.ErrorCollector;
+import exception.ErrorType;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.ast.LValNode;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
+import symbol.Var;
 import util.Debug;
 
 /**
@@ -53,6 +58,25 @@ public class LValAssignStmt extends ASTNode implements Statement {
             exp.parse();
         }
         expect(TokenType.Semicolon, ";");
+    }
+
+    @Override
+    public void analyzeSemantic(SymbolTable table) {
+        // check before use
+        if (!lVal.analyzeSemantic(table)) {
+            // if this lVal is undefined
+            return;
+        }
+        // check if it is a constant
+        if (((Var) table.find(lVal.getName())).isConst()) {
+            ErrorCollector.getInstance().addError(
+                    new CompileError(lVal.getLineNum(), ErrorType.ChangeConstValue,
+                            "cannot assign to constant variable " + lVal.getName())
+            );
+        }
+        if (type == Type.Exp) {
+            exp.analyzeSemantic(table);
+        }
     }
 
     @Override

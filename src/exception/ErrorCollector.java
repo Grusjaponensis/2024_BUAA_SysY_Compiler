@@ -11,6 +11,8 @@ public class ErrorCollector {
 
     public static ErrorCollector getInstance() { return instance; }
 
+    private ErrorCollector() {}
+
     /**
      * Adds a compile error to the collector.
      *
@@ -18,6 +20,13 @@ public class ErrorCollector {
      */
     public void addError(CompileError error) {
         if (!errorsSet.contains(error)) {
+            if (errors.stream().anyMatch(
+                    e -> e.line.equals(error.line) && e.type == ErrorType.ParamTypeMismatch)
+            ) {
+                // for some unpleasant reasons, FuncParamTypeMismatch error can occur more than once in a line
+                // so we should exclude any additional errors
+                return;
+            }
             errors.add(error);
             errorsSet.add(error);
         }

@@ -1,7 +1,7 @@
 package exception;
 
 public enum ErrorType {
-    IllegalSymbol('a', "Illegal symbol"),
+    IllegalOperator('a', "Illegal symbol"),
     RedefinedSymbol('b', "Redefined symbol"),
     UndefinedSymbol('c', "Undefined symbol"),
     ParamNumMismatch('d', "Function parameter number mismatch"),
@@ -12,7 +12,7 @@ public enum ErrorType {
     MissSemicn('i', "Missing semicolon"),
     MissRparent('j', "Missing right parenthesis"),
     MissRbrack('k', "Missing right bracket"),
-    FormStringMismatch('l', "Format string mismatch in printf (number of format specifiers and expressions)"),
+    FormStringMismatch('l', "Format string mismatch in printf"),
     NonLoopStmt('m', "Use of break or continue statement outside a loop");
 
     private final char type;

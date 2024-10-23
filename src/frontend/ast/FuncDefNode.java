@@ -3,6 +3,7 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.Func;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -17,6 +18,8 @@ public class FuncDefNode extends ASTNode {
     private FuncParamListNode paramList;
     private BlockNode body;
     private int lineNum;
+    private int endLineNum;
+    private SymbolTable symbolTable;
 
     public FuncDefNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -53,10 +56,38 @@ public class FuncDefNode extends ASTNode {
         // parse function body
         body = new BlockNode(tokens, depth + 1);
         body.parse();
+        endLineNum = tokens.prev().getLineNumber();
     }
 
     public void analyzeSemantic(SymbolTable table) {
-        // table.insert(new Func(lineNum, identifier.name(), funcType.getType(), ));
+        if (paramList != null) {
+            table.insert(
+                    new Func(
+                            lineNum,
+                            identifier.name(),
+                            funcType.valueType(),
+                            paramList.getParamTypes(),
+                            paramList.isParamsArray()
+                    )
+            );
+        } else {
+            table.insert(new Func(lineNum, identifier.name(), funcType.valueType()));
+        }
+        // enter a new block
+        this.symbolTable = new SymbolTable(table);
+        // for output
+        table.insertChildTable(symbolTable);
+        if (paramList != null) {
+            // using new symbol table: all parameters belong to deeper scope
+            paramList.analyzeSemantic(symbolTable);
+        }
+        symbolTable.setInFuncDef(funcType.valueType());
+        // use current symbol table in deeper scope
+        body.analyzeSemantic(symbolTable);
+        // unset function def fields
+        symbolTable.setInFuncDef(null);
+        // check return stmt existence and return type
+        body.checkReturnStmt(funcType.valueType(), endLineNum);
     }
 
     @Override

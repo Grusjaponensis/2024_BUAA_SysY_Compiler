@@ -1,7 +1,8 @@
 package frontend.ast;
 
+import exception.*;
 import frontend.token.*;
-import symbol.SymbolTable;
+import symbol.*;
 import util.Debug;
 
 /**
@@ -17,6 +18,7 @@ public class PrimaryExpNode extends ASTNode {
     private Number number;
     private Char character;
     private Type type;
+    private int lineNum;
 
     public PrimaryExpNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -24,18 +26,12 @@ public class PrimaryExpNode extends ASTNode {
 
     public void parse() {
         Token token = tokens.get();
+        lineNum = token.getLineNumber();
         if (token.isTypeOf(TokenType.LParenthesis)) {
             type = Type.Exp;
             tokens.advance();
             expNode = new ExpNode(tokens, depth + 1);
             expNode.parse();
-            // if (!tokens.get().isTypeOf(TokenType.RParenthesis)) {
-            //     errors.add(new CompileError(
-            //             tokens.prev().getLineNumber(), ErrorType.MissRparent, "got: " + token.getType()
-            //     ));
-            // } else {
-            //     tokens.advance();
-            // }
             expect(TokenType.RParenthesis, ")");
         } else if (token.isTypeOf(TokenType.Identifier)) {
             type = Type.LVal;
@@ -55,7 +51,59 @@ public class PrimaryExpNode extends ASTNode {
     public void analyzeSemantic(SymbolTable table) {
         switch (type) {
             case Exp -> expNode.analyzeSemantic(table);
-            case LVal -> lValNode.analyzeSemantic(table);
+            case LVal -> {
+                if (!lValNode.analyzeSemantic(table)) {
+                    return;
+                }
+                if (!table.isAnalyzeFuncCallParams()) {
+                    return;
+                }
+
+                Func funcToAnalyze = table.getFuncToCall();
+                boolean isIndexParamArray = funcToAnalyze.getIsParamsArray().get(table.getParamsIndex());
+                // when lVal is called like an array (isArrayCall() == true), treat it as a variable
+                if (lValNode.isArrayCall()) {
+                    // assign variable to array param
+                    if (isIndexParamArray) {
+                        ErrorCollector.getInstance().addError(
+                                new CompileError(lineNum, ErrorType.ParamTypeMismatch,
+                                        "expect array type parameter got variable")
+                        );
+                    }
+                } else {
+                    if (table.find(lValNode.getName()) instanceof Var var) {
+                        ValueType indexParamType = funcToAnalyze.getParamTypes().get(table.getParamsIndex());
+                        if (var.isArray()) {
+                            // assign array to variable param, or char/int array type mismatch
+                            if (!isIndexParamArray || indexParamType != var.getValueType()) {
+                                ErrorCollector.getInstance().addError(
+                                        new CompileError(lineNum, ErrorType.ParamTypeMismatch)
+                                );
+                            }
+                        } else {
+                            // assign variable to array
+                            if (isIndexParamArray) {
+                                ErrorCollector.getInstance().addError(
+                                        new CompileError(lineNum, ErrorType.ParamTypeMismatch,
+                                                "expect array type parameter got variable")
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            case Num, Char -> {
+                if (!table.isAnalyzeFuncCallParams() || table.isInLValBracket()) {
+                    return;
+                }
+                Func funcToAnalyze = table.getFuncToCall();
+                if (funcToAnalyze.getIsParamsArray().get(table.getParamsIndex())) {
+                    ErrorCollector.getInstance().addError(
+                            new CompileError(lineNum, ErrorType.ParamTypeMismatch,
+                                    "expect array type parameter got const literal")
+                    );
+                }
+            }
         }
     }
 

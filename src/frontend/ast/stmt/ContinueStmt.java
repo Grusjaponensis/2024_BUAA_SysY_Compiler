@@ -1,8 +1,12 @@
 package frontend.ast.stmt;
 
+import exception.CompileError;
+import exception.ErrorCollector;
+import exception.ErrorType;
 import frontend.ast.ASTNode;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -12,6 +16,8 @@ import util.Debug;
  * </p>
  */
 public class ContinueStmt extends ASTNode implements Statement {
+    private int lineNum;
+
     public ContinueStmt(TokenList tokens, int depth) {
         super(tokens, depth);
     }
@@ -19,7 +25,17 @@ public class ContinueStmt extends ASTNode implements Statement {
     @Override
     public void parse() {
         expect(TokenType.ContinueKeyword, "continue");
+        lineNum = tokens.prev().getLineNumber();
         expect(TokenType.Semicolon, ";");
+    }
+
+    @Override
+    public void analyzeSemantic(SymbolTable table) {
+        if (!table.isInLoop()) {
+            ErrorCollector.getInstance().addError(
+                    new CompileError(lineNum, ErrorType.NonLoopStmt)
+            );
+        }
     }
 
     @Override

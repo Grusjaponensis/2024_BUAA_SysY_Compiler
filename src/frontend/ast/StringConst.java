@@ -2,8 +2,17 @@ package frontend.ast;
 
 import util.Debug;
 
+import java.util.stream.IntStream;
+
 public record StringConst(String value) {
     public char[] toCharArray() { return value.toCharArray(); }
+
+    public int paramsNum() {
+        return (int) IntStream.range(0, value.length() - 1)
+                .filter(i -> value.charAt(i) == '%' &&
+                        (value.charAt(i + 1) == 'd' || value.charAt(i + 1) == 'c'))
+                .count();
+    }
 
     @Override
     public String toString() {

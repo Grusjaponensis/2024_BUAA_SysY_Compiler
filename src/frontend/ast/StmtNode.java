@@ -4,6 +4,7 @@ import frontend.ast.stmt.*;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -87,6 +88,12 @@ public class StmtNode extends ASTNode {
             }
         }
     }
+
+    public void analyzeSemantic(SymbolTable table) {
+        stmt.analyzeSemantic(table);
+    }
+
+    public Statement getStmt() { return stmt; }
 
     @Override
     public String toString() {

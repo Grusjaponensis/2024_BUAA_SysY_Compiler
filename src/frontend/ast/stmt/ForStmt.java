@@ -7,6 +7,7 @@ import frontend.ast.StmtNode;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -66,6 +67,25 @@ public class ForStmt extends ASTNode implements Statement {
         // binary-like types
         int index = (isStmt2Exist ? 1 : 0) | (isCondExist ? 1 : 0) << 1 | (isStmt1Exist ? 1 : 0) << 2;
         type = Type.values()[index];
+    }
+
+    @Override
+    public void analyzeSemantic(SymbolTable table) {
+        // for loop cannot declare new variables
+        if (stmt1 != null) {
+            stmt1.analyzeSemantic(table);
+        }
+        if (stmt2 != null) {
+            stmt2.analyzeSemantic(table);
+        }
+        if (cond != null) {
+            cond.analyzeSemantic(table);
+        }
+        // mark enter loop
+        table.enterLoop();
+        body.analyzeSemantic(table);
+        // mark outside loop
+        table.exitLoop();
     }
 
     @Override

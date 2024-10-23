@@ -16,7 +16,7 @@ public record BType(TokenType type) {
         }
     }
 
-    public ValueType getType() {
+    public ValueType valueType() {
         return type == TokenType.IntKeyword ? ValueType.Int : ValueType.Char;
     }
 

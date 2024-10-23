@@ -1,8 +1,10 @@
 package frontend.ast;
 
+import frontend.ast.stmt.Statement;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 
 /**
  * {@code BlockItem -> Decl | Stmt}
@@ -30,6 +32,18 @@ public class BlockItemNode extends ASTNode {
             stmt.parse();
         }
     }
+
+    public void analyzeSemantic(SymbolTable table) {
+        if (isDecl) {
+            decl.analyzeSemantic(table);
+        } else {
+            stmt.analyzeSemantic(table);
+        }
+    }
+
+    public Statement getStmt() { return stmt.getStmt(); }
+
+    public boolean isDecl() { return isDecl; }
 
     @Override
     public String toString() {

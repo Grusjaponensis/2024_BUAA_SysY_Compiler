@@ -1,9 +1,14 @@
 package frontend.ast.stmt;
 
+import exception.CompileError;
+import exception.ErrorCollector;
+import exception.ErrorType;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
+import symbol.ValueType;
 import util.Debug;
 
 /**
@@ -14,6 +19,7 @@ import util.Debug;
  */
 public class ReturnStmt extends ASTNode implements Statement {
     private ExpNode returnExp;
+    private int lineNum;
 
     public ReturnStmt(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -22,6 +28,7 @@ public class ReturnStmt extends ASTNode implements Statement {
     @Override
     public void parse() {
         expect(TokenType.ReturnKeyword, "return");
+        lineNum = tokens.prev().getLineNumber();
         if (isExpr(tokens.get().getType())) {
             returnExp = new ExpNode(tokens, depth + 1);
             returnExp.parse();
@@ -37,6 +44,21 @@ public class ReturnStmt extends ASTNode implements Statement {
                 type == TokenType.Identifier ||
                 type == TokenType.IntLiteral ||
                 type == TokenType.CharLiteral;
+    }
+
+    @Override
+    public void analyzeSemantic(SymbolTable table) {
+        if (table.inInFuncDef() && table.getFuncReturnType() == ValueType.Void) {
+            // if this return statement is inside a void function, check if it has invalid return value
+            if (returnExp != null) {
+                ErrorCollector.getInstance().addError(
+                        new CompileError(lineNum, ErrorType.VoidReturnValue)
+                );
+            }
+        }
+        if (returnExp != null) {
+            returnExp.analyzeSemantic(table);
+        }
     }
 
     @Override

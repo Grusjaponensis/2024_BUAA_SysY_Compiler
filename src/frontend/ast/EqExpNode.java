@@ -2,6 +2,7 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -35,6 +36,10 @@ public class EqExpNode extends ASTNode {
             relExpNode.parse();
             relExpNodes.add(relExpNode);
         }
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+        relExpNodes.forEach(exp -> exp.analyzeSemantic(table));
     }
 
     @Override

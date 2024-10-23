@@ -55,7 +55,7 @@ public class VarDefNode extends ASTNode {
     }
 
     public void analyzeSemantic(SymbolTable table, BType type) {
-        table.insert(new Var(lineNum, identifier.name(), type.getType(), constExp != null));
+        table.insert(new Var(lineNum, identifier.name(), type.valueType(), false, constExp != null));
 
         if (constExp != null) {
             constExp.analyzeSemantic(table);

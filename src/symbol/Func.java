@@ -1,18 +1,30 @@
 package symbol;
 
+import util.Debug;
+
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Func extends Symbol {
     private final ValueType returnType;
-    private ArrayList<ValueType> paramTypes;
-    private ArrayList<Boolean> isParamsArray;
+    private ArrayList<ValueType> paramTypes = new ArrayList<>();
+    private ArrayList<Boolean> isParamsArray = new ArrayList<>();
 
     public Func(int lineNum, String name, ValueType returnType,
                 ArrayList<ValueType> paramTypes, ArrayList<Boolean> isParamsArray) {
-        super(lineNum, name, SymbolType.Function);
+        super(lineNum, name);
         this.returnType = returnType;
         this.paramTypes = paramTypes;
         this.isParamsArray = isParamsArray;
+    }
+
+    /**
+     * Use when func def has no parameters.
+     */
+    public Func(int lineNum, String name, ValueType returnType) {
+        super(lineNum, name);
+        this.returnType = returnType;
     }
 
     public int getParamsNum() { return paramTypes.size(); }
@@ -26,4 +38,16 @@ public class Func extends Symbol {
     public void setParamTypes(ArrayList<ValueType> paramTypes) { this.paramTypes = paramTypes; }
 
     public void setIsParamsArray(ArrayList<Boolean> isParamsArray) { this.isParamsArray = isParamsArray; }
+
+    @Override
+    public String toString() {
+        if (!Debug.DEBUG_STATE) {
+            return " " + name + " " + returnType + "Func\n";
+        }
+        String s = "[" + IntStream.range(0, isParamsArray.size())
+                .mapToObj(i -> paramTypes.get(i) + ": " + isParamsArray.get(i))
+                .collect(Collectors.joining(", ")) + "]";
+        return String.format("%s[Func]%s name: %s type: %s, params: %s, declared: line %d%n",
+                Debug.TERM_GREEN, Debug.TERM_RESET, name, returnType, s, lineNum);
+    }
 }

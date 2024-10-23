@@ -1,11 +1,15 @@
 package frontend.ast.stmt;
 
+import exception.CompileError;
+import exception.ErrorCollector;
+import exception.ErrorType;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.ast.StringConst;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
@@ -19,6 +23,7 @@ import java.util.ArrayList;
 public class PrintfStmt extends ASTNode implements Statement {
     private StringConst formattedString;
     private final ArrayList<ExpNode> params = new ArrayList<>();
+    private int lineNum;
 
     public PrintfStmt(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -27,6 +32,7 @@ public class PrintfStmt extends ASTNode implements Statement {
     @Override
     public void parse() {
         expect(TokenType.PrintfKeyword, "printf");
+        lineNum = tokens.prev().getLineNumber();
         expect(TokenType.LParenthesis, "(");
 
         Token token = tokens.get();
@@ -46,6 +52,18 @@ public class PrintfStmt extends ASTNode implements Statement {
         }
         expect(TokenType.RParenthesis, ")");
         expect(TokenType.Semicolon, ";");
+    }
+
+    @Override
+    public void analyzeSemantic(SymbolTable table) {
+        if (formattedString.paramsNum() != params.size()) {
+            ErrorCollector.getInstance().addError(
+                    new CompileError(lineNum, ErrorType.FormStringMismatch,
+                            "expected " + formattedString.paramsNum() + " found " + params.size())
+            );
+            return;
+        }
+        params.forEach(e -> e.analyzeSemantic(table));
     }
 
     @Override

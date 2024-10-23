@@ -37,7 +37,7 @@ public class AddExpNode extends ASTNode {
     }
 
     public void analyzeSemantic(SymbolTable table) {
-
+        mulExpNodes.forEach(exp -> exp.analyzeSemantic(table));
     }
 
     @Override

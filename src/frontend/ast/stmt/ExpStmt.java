@@ -4,6 +4,7 @@ import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -36,6 +37,13 @@ public class ExpStmt extends ASTNode implements Statement {
                 type == TokenType.Identifier ||
                 type == TokenType.IntLiteral ||
                 type == TokenType.CharLiteral;
+    }
+
+    @Override
+    public void analyzeSemantic(SymbolTable table) {
+        if (exp != null) {
+            exp.analyzeSemantic(table);
+        }
     }
 
     @Override

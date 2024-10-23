@@ -1,7 +1,12 @@
 package frontend.ast;
 
+import exception.CompileError;
+import exception.ErrorCollector;
+import exception.ErrorType;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import symbol.SymbolTable;
+import symbol.Var;
 import util.Debug;
 
 /**
@@ -23,6 +28,17 @@ public class ForStmtNode extends ASTNode {
 
         exp = new ExpNode(tokens, depth + 1);
         exp.parse();
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+        if (table.find(lVal.getName()) instanceof Var var) {
+            if (var.isConst()) {
+                ErrorCollector.getInstance().addError(
+                        new CompileError(lVal.getLineNum(), ErrorType.ChangeConstValue)
+                );
+            }
+        }
+        exp.analyzeSemantic(table);
     }
 
     @Override

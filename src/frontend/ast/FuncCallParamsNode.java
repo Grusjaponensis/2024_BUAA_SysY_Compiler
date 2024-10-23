@@ -1,5 +1,8 @@
 package frontend.ast;
 
+import exception.CompileError;
+import exception.ErrorCollector;
+import exception.ErrorType;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
 import symbol.Func;
@@ -14,6 +17,7 @@ import java.util.ArrayList;
  */
 public class FuncCallParamsNode extends ASTNode {
     private final ArrayList<ExpNode> params = new ArrayList<>();
+    private int lineNum;
 
     public FuncCallParamsNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -23,6 +27,7 @@ public class FuncCallParamsNode extends ASTNode {
         ExpNode expNode = new ExpNode(tokens, depth + 1);
         expNode.parse();
         params.add(expNode);
+        lineNum = tokens.prev().getLineNumber();
 
         while (tokens.get().isTypeOf(TokenType.Comma)) {
             tokens.advance();
@@ -34,10 +39,23 @@ public class FuncCallParamsNode extends ASTNode {
 
     public void analyzeSemantic(SymbolTable table, String name) {
         // check the number of parameters
-        if (((Func) table.find(name)).getParamsNum() != params.size()) {
-            // TODO: error handling
+        Func func = (Func) table.find(name);
+        if (func.getParamsNum() != params.size()) {
+            ErrorCollector.getInstance().addError(
+                    new CompileError(lineNum, ErrorType.ParamNumMismatch,
+                            "expected " + func.getParamsNum() + " found " + params.size())
+            );
+            // if the number of parameter is wrong, then ignore all checks below
+            return;
         }
-        params.forEach(exp -> exp.analyzeSemantic(table));
+        // record current function for further analysis
+        table.setFuncToCall(func);
+        params.forEach(exp -> {
+            exp.analyzeSemantic(table);
+            table.incrementParamsIndex();
+        });
+        // unset current function
+        table.setFuncToCall(null);
     }
 
     @Override

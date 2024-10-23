@@ -1,5 +1,8 @@
 package frontend.ast;
 
+import exception.CompileError;
+import exception.ErrorCollector;
+import exception.ErrorType;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
@@ -21,6 +24,7 @@ public class UnaryExpNode extends ASTNode {
     private FuncCallParamsNode funcCallParams;
     private UnaryOp unaryOp;
     private UnaryExpNode unaryExp;
+    private int lineNum;
 
     public UnaryExpNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -28,6 +32,7 @@ public class UnaryExpNode extends ASTNode {
 
     public void parse() {
         Token token = tokens.get();
+        lineNum = token.getLineNumber();
         if (token.isTypeOf(TokenType.PlusOperator) ||
                 token.isTypeOf(TokenType.MinusOperator) ||
                 token.isTypeOf(TokenType.NotOperator)) {
@@ -47,13 +52,6 @@ public class UnaryExpNode extends ASTNode {
                 funcCallParams = new FuncCallParamsNode(tokens, depth + 1);
                 funcCallParams.parse();
             }
-            // if (!tokens.get().isTypeOf(TokenType.RParenthesis)) {
-            //     errors.add(new CompileError(
-            //             tokens.prev().getLineNumber(), ErrorType.MissRparent, "got: " + token.getType()
-            //     ));
-            // } else {
-            //     tokens.advance();
-            // }
             expect(TokenType.RParenthesis, ")");
         } else {
             // PrimaryExp
@@ -78,20 +76,57 @@ public class UnaryExpNode extends ASTNode {
             case Primary -> primaryExp.analyzeSemantic(table);
             case FuncCall -> {
                 if (!table.hasSymbol(identifier.name())) {
-                    // using undeclared identifier
-                    // TODO: error handling
+                    // is using undeclared identifier
+                    ErrorCollector.getInstance().addError(
+                            new CompileError(lineNum, ErrorType.UndefinedSymbol,
+                                    "undeclared symbol: " + identifier.name())
+                    );
+                    return;
+                }
+                // check if this func call is another func call's parameter
+                if (table.isAnalyzeFuncCallParams()) {
+                    if (table.isInLValBracket()) {
+                        if (table.getBracketStatus()) {
+                            table.toggleBracketStatus();
+                        } else {
+                            checkFuncCallParams(table);
+                        }
+                    } else {
+                        checkFuncCallParams(table);
+                    }
                 }
                 if (funcCallParams == null) {
                     Func func = (Func) table.find(identifier.name());
                     if (func.getParamsNum() != 0) {
                         // call parameterized function without parameters
-                        // TODO: error handling: wrong number of parameters
+                        ErrorCollector.getInstance().addError(
+                                new CompileError(
+                                        lineNum,
+                                        ErrorType.ParamNumMismatch,
+                                        "parameters expected at line " + lineNum
+                                )
+                        );
                     }
                     return;
                 }
                 funcCallParams.analyzeSemantic(table, identifier.name());
             }
             case Unary -> unaryExp.analyzeSemantic(table);
+        }
+    }
+
+    private void checkFuncCallParams(SymbolTable table) {
+        Func funcToAnalyze = table.getFuncToCall();
+        if (table.getParamsIndex() < 0 || table.getParamsIndex() >= funcToAnalyze.getParamsNum()) {
+            throw new RuntimeException("Wrong reserved function parameter number, expected at most " + (funcToAnalyze.getParamsNum() - 1) + " got " + table.getParamsIndex());
+        }
+        if (funcToAnalyze.getIsParamsArray().get(table.getParamsIndex())) {
+            // the index-th parameter of reserved function is an array
+            // then current func call is trying to pass variable into array
+            ErrorCollector.getInstance().addError(
+                    new CompileError(lineNum, ErrorType.ParamTypeMismatch,
+                            "expected array type parameter, got func call")
+            );
         }
     }
 

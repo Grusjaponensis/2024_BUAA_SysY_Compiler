@@ -54,10 +54,15 @@ public class CompUnit extends ASTNode {
                 token.isTypeOf(TokenType.CharKeyword);
     }
 
-    public void analyzeSemantics() {
+    public void analyzeSemantic() {
         declNodes.forEach(decl -> decl.analyzeSemantic(symbolTable));
         funcDefNodes.forEach(funcDef -> funcDef.analyzeSemantic(symbolTable));
         mainFuncDefNode.analyzeSemantic(symbolTable);
+    }
+
+    /// for output requirement
+    public String output() {
+        return this.symbolTable.output();
     }
 
     @Override

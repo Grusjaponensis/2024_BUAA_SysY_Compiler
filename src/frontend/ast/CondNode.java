@@ -1,6 +1,7 @@
 package frontend.ast;
 
 import frontend.token.TokenList;
+import symbol.SymbolTable;
 import util.Debug;
 
 /**
@@ -16,6 +17,10 @@ public class CondNode extends ASTNode {
     public void parse() {
         cond = new LOrExpNode(tokens, depth + 1);
         cond.parse();
+    }
+
+    public void analyzeSemantic(SymbolTable table) {
+        cond.analyzeSemantic(table);
     }
 
     @Override

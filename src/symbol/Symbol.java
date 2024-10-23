@@ -1,14 +1,12 @@
 package symbol;
 
-public class Symbol {
+public abstract class Symbol {
     protected final int lineNum;
     protected final String name;
-    protected SymbolType type;
 
-    public Symbol(int lineNum, String name, SymbolType type) {
+    public Symbol(int lineNum, String name) {
         this.lineNum = lineNum;
         this.name = name;
-        this.type = type;
     }
 
     public int getLineNum() {
@@ -18,10 +16,4 @@ public class Symbol {
     public String getName() {
         return name;
     }
-
-    public SymbolType getType() {
-        return type;
-    }
-
-    public boolean isTypeof(SymbolType type) { return this.type == type; }
 }
