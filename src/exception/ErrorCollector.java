@@ -21,8 +21,8 @@ public class ErrorCollector {
     public void addError(CompileError error) {
         if (!errorsSet.contains(error)) {
             if (errors.stream().anyMatch(
-                    e -> e.line.equals(error.line) && e.type == ErrorType.ParamTypeMismatch)
-            ) {
+                    e -> e.line.equals(error.line) && e.type == ErrorType.ParamTypeMismatch
+            )) {
                 // for some unpleasant reasons, FuncParamTypeMismatch error can occur more than once in a line
                 // so we should exclude any additional errors
                 return;

@@ -4,7 +4,6 @@ import frontend.ast.ASTNode;
 import frontend.ast.BlockNode;
 import frontend.token.TokenList;
 import symbol.SymbolTable;
-import util.Debug;
 
 /**
  * {@code BlockStmt -> Block}
@@ -32,12 +31,6 @@ public class BlockStmt extends ASTNode implements Statement {
 
     @Override
     public String toString() {
-        StringBuilder b = new StringBuilder();
-        if (Debug.DEBUG_STATE) {
-            b.append(block);
-            return b.toString();
-        }
-        b.append(block);
-        return b.toString();
+        return String.valueOf(block);
     }
 }

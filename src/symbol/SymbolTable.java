@@ -11,7 +11,7 @@ import java.util.Stack;
 public class SymbolTable {
     private final HashMap<String, Symbol> symbolTable = new HashMap<>();
     private final SymbolTable parent;
-    public final int depth;
+    private final int depth;
     private boolean isInLoop = false;
 
     private boolean isInFuncDefinition = false;

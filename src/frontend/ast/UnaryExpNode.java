@@ -103,7 +103,7 @@ public class UnaryExpNode extends ASTNode {
                                 new CompileError(
                                         lineNum,
                                         ErrorType.ParamNumMismatch,
-                                        "parameters expected at line " + lineNum
+                                        "parameters expected"
                                 )
                         );
                     }

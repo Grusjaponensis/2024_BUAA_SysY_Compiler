@@ -21,7 +21,6 @@ public class Compiler {
         String content = Files.readString(path);
 
         Debug.log(Debug.TERM_RED + ">>>>>>>> Original content: >>>>>>>>\n" + Debug.TERM_RESET + content + "\n");
-        Debug.log(Debug.TERM_RED + ">>>>>>>> Lexer Output: >>>>>>>>" + Debug.TERM_RESET);
 
         // generate tokens
         Lexer lexer = new Lexer(content);
