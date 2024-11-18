@@ -193,7 +193,7 @@ public class SymbolTable {
 
     public String output() {
         StringBuilder b = new StringBuilder();
-        symbols.forEach(s -> b.append(scopeId).append(s));
+        symbols.forEach(b::append);
         childTables.forEach(child -> b.append(child.output()));
         return b.toString();
     }

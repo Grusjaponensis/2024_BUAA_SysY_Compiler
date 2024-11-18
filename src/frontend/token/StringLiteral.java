@@ -7,10 +7,9 @@ public class StringLiteral extends Token {
         super(TokenType.StringLiteral, line, col, content);
     }
 
-    @Override
-    public String toString() {
+    public static String display(String value) {
         StringBuilder builder = new StringBuilder();
-        content.chars().forEach(c -> {
+        value.chars().forEach(c -> {
             switch (c) {
                 case (char) 7 -> builder.append("\\a");
                 case '\b' -> builder.append("\\b");
@@ -25,9 +24,14 @@ public class StringLiteral extends Token {
                 default -> builder.append((char) c);
             }
         });
+        return builder.toString();
+    }
+
+    @Override
+    public String toString() {
         if (Debug.DEBUG_STATE) {
-            return String.format("Token_%-25s <line: %3d, col: %3d> %s", type, lineNumber, columnNumber, "\"" + builder + "\"");
+            return String.format("Token_%-25s <line: %3d, col: %3d> %s", type, lineNumber, columnNumber, "\"" + display(content) + "\"");
         }
-        return type + " " + "\"" + builder + "\"";
+        return type + " " + "\"" + display(content) + "\"";
     }
 }

@@ -47,6 +47,13 @@ public class ExpStmt extends ASTNode implements Statement {
     }
 
     @Override
+    public void generateIR(SymbolTable table) {
+        if (exp != null) {
+            exp.generateIR(table);
+        }
+    }
+
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         addErrors();

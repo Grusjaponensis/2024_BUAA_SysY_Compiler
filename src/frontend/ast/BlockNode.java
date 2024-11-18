@@ -36,6 +36,10 @@ public class BlockNode extends ASTNode {
         blockItems.forEach(item -> item.analyzeSemantic(table));
     }
 
+    public void generateIR(SymbolTable table) {
+        blockItems.forEach(item -> item.generateIR(table));
+    }
+
     /**
      * Check if the last stmt of a <strong>non-void</strong> function is a Return Stmt.
      * @param returnType the return type of the function to check.
@@ -65,7 +69,7 @@ public class BlockNode extends ASTNode {
     /**
      * @return the last block item in this block, {@code null} if this item is not a statement or no item exists.
      */
-    private BlockItemNode getLastStmt() {
+    public BlockItemNode getLastStmt() {
         if (!blockItems.isEmpty()) {
             if (blockItems.get(blockItems.size() - 1).isDecl()) {
                 return null;

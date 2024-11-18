@@ -5,13 +5,13 @@ import frontend.Parser;
 import frontend.ast.CompUnit;
 import frontend.token.Token;
 import frontend.token.TokenList;
+import ir.IRBuilder;
 import util.Debug;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 
 public class Compiler {
@@ -37,6 +37,8 @@ public class Compiler {
             ErrorCollector.getInstance().addError(e);
         }
 
+        tokens.forEach(System.out::println);
+
         // generate AST
         Parser parser = new Parser(new TokenList(tokens));
         CompUnit compUnit = parser.parse();
@@ -53,21 +55,23 @@ public class Compiler {
         String output = compUnit.output();
         System.out.println(output);
 
-        Path symbol = Path.of("symbol.txt");
-        Files.writeString(symbol, output, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-
         if (ErrorCollector.getInstance().hasErrors()) {
-            Path errorFile = Path.of("error.txt");
-            Files.writeString(
-                    errorFile,
-                    ErrorCollector.getInstance().toString(),
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE
-            );
+            Path errorFile = Paths.get("error.txt");
+            Files.writeString(errorFile, ErrorCollector.getInstance().toString());
+            System.out.println(Debug.TERM_RED + "errors: \n" + Debug.TERM_RESET + ErrorCollector.getInstance());
+            return;
         }
 
-        System.out.println(Debug.TERM_RED + "errors: \n" + Debug.TERM_RESET + ErrorCollector.getInstance());
+        compUnit.generateIR();
 
-        Debug.log("\n" + Debug.TERM_RED + ">>>>>>>> Program exit... >>>>>>>>" + Debug.TERM_RESET);
+        Debug.log("\n\n" + Debug.TERM_RED + ">>>>>>>> LLVM IR: >>>>>>>>" + Debug.TERM_RESET + "\n");
+
+        String ir = IRBuilder.getInstance().generateIR();
+        System.out.println(ir);
+
+        Path irFile = Paths.get("llvm_ir.txt");
+        Files.writeString(irFile, ir);
+
+        Debug.log(Debug.TERM_RED + ">>>>>>>> Program exit... >>>>>>>>" + Debug.TERM_RESET);
     }
 }

@@ -6,9 +6,18 @@ import exception.ErrorType;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.constant.IRConstInt;
+import ir.instr.*;
+import ir.type.IRBasicType;
 import symbol.Func;
+import symbol.Symbol;
 import symbol.SymbolTable;
+import symbol.ValueType;
 import util.Debug;
+
+import java.util.ArrayList;
 
 /**
  * {@code UnaryExp -> PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp}
@@ -128,6 +137,68 @@ public class UnaryExpNode extends ASTNode {
                             "expected array type parameter, got func call")
             );
         }
+    }
+
+    public int evaluate(SymbolTable table) {
+        int res;
+        if (type == Type.Primary) {
+            res = primaryExp.evaluate(table);
+        } else if (type == Type.Unary) {
+            assert unaryOp.type() != TokenType.NotOperator;
+            res = (unaryOp.type() == TokenType.PlusOperator ? 1 : -1) * unaryExp.evaluate(table);
+        } else {
+            throw new RuntimeException("Func call should not appear in a const expression");
+        }
+        return res;
+    }
+
+    public IRValue generateIR(SymbolTable table) {
+        if (type == Type.Primary) {
+            return primaryExp.generateIR(table);
+        } else if (type == Type.FuncCall) {
+            return generateIRForFuncCall(table);
+        } else {
+            // Unary
+            IRValue u = unaryExp.generateIR(table);
+            IRConstInt zero = new IRConstInt(IRBasicType.I32, 0);
+            if (unaryOp.type() == TokenType.MinusOperator) {
+                // return 0 - u
+                IRInstr sub = new IRArithmetic(
+                        IRBuilder.getInstance().localReg(), IRInstrType.Sub,
+                        zero, u
+                );
+                IRBuilder.getInstance().addInstr(sub);
+                return sub;
+            } else if (unaryOp.type() == TokenType.NotOperator) {
+                // notice that '!a' is equal to 'a == 0', return type is i1
+                IRInstr compareTo0 = new IRIcmp(IRBuilder.getInstance().localReg(), IRInstrType.Eq, u, zero);
+                IRBuilder.getInstance().addInstr(compareTo0);
+                // zero extends result to 32 bits
+                return new IRTypeCast(IRBuilder.getInstance().localReg(), IRInstrType.Zext, compareTo0, IRBasicType.I32);
+            }
+            // ignore +
+            return u;
+        }
+    }
+
+    private IRValue generateIRForFuncCall(SymbolTable table) {
+        Symbol symbol = table.find(identifier.name());
+        Func func = (Func) symbol;
+        ArrayList<IRValue> params = new ArrayList<>();
+        if (funcCallParams != null) {
+            params = funcCallParams.generateIR(table, func);
+        }
+        // void function cannot have any v-regs
+        IRInstr funcCall;
+        if (func.getReturnType() == ValueType.Void) {
+            funcCall = new IRCall(func.getReturnType().mapToIRType(), "", symbol.getIrValue().name(), params);
+        } else {
+            funcCall = new IRCall(
+                    func.getReturnType().mapToIRType(), IRBuilder.getInstance().localReg(), symbol.getIrValue().name(), params
+            );
+        }
+        IRBuilder.getInstance().addInstr(funcCall);
+        return funcCall;
     }
 
     @Override

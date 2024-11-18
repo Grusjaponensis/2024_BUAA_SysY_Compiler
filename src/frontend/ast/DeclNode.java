@@ -49,6 +49,14 @@ public class DeclNode extends ASTNode {
         }
     }
 
+    public void generateIR(SymbolTable table, boolean isGlobal) {
+        if (type == Type.Const) {
+            constNode.generateIR(table, isGlobal);
+        } else {
+            varNode.generateIR(table, isGlobal);
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();

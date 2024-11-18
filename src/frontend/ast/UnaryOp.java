@@ -8,7 +8,7 @@ public record UnaryOp(TokenType type) {
         if (type != TokenType.PlusOperator &&
                 type != TokenType.MinusOperator &&
                 type != TokenType.NotOperator) {
-            throw new Error("Invalid unary operator: " + type);
+            throw new RuntimeException("Invalid unary operator: " + type);
         }
     }
 

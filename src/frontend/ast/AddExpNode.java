@@ -2,6 +2,11 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.instr.IRArithmetic;
+import ir.instr.IRInstr;
+import ir.instr.IRInstrType;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -38,6 +43,43 @@ public class AddExpNode extends ASTNode {
 
     public void analyzeSemantic(SymbolTable table) {
         mulExpNodes.forEach(exp -> exp.analyzeSemantic(table));
+    }
+
+    public int evaluate(SymbolTable table) {
+        int res = mulExpNodes.get(0).evaluate(table);
+        for (int i = 1; i < mulExpNodes.size(); i++) {
+            if (operators.get(i) == TokenType.PlusOperator) {
+                res += mulExpNodes.get(i).evaluate(table);
+            } else {
+                res -= mulExpNodes.get(i).evaluate(table);
+            }
+        }
+        return res;
+    }
+
+    public IRValue generateIR(SymbolTable table) {
+        IRValue u = mulExpNodes.get(0).generateIR(table);
+        IRValue v;
+        for (int i = 1; i < mulExpNodes.size(); i++) {
+            v = mulExpNodes.get(i).generateIR(table);
+            IRInstr operation;
+            if (operators.get(i) == TokenType.PlusOperator) {
+                // perform u + v
+                operation = new IRArithmetic(
+                        IRBuilder.getInstance().localReg(), IRInstrType.Add, u, v
+                );
+                IRBuilder.getInstance().addInstr(operation);
+            } else {
+                // u - v
+                operation = new IRArithmetic(
+                        IRBuilder.getInstance().localReg(), IRInstrType.Sub, u, v
+                );
+                IRBuilder.getInstance().addInstr(operation);
+            }
+            // update u
+            u = operation;
+        }
+        return u;
     }
 
     @Override

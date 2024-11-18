@@ -47,7 +47,7 @@ public class Func extends Symbol {
         String s = "[" + IntStream.range(0, isParamsArray.size())
                 .mapToObj(i -> paramTypes.get(i) + ": " + isParamsArray.get(i))
                 .collect(Collectors.joining(", ")) + "]";
-        return String.format("%s[Func]%s name: %s type: %s, params: %s, declared: line %d%n",
+        return String.format("%s[Func  ]%s name: %-6s, type: %-6s, params: %-15s, declared: line %d%n",
                 Debug.TERM_GREEN, Debug.TERM_RESET, name, returnType, s, lineNum);
     }
 }

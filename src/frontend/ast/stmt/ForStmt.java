@@ -89,6 +89,11 @@ public class ForStmt extends ASTNode implements Statement {
     }
 
     @Override
+    public void generateIR(SymbolTable table) {
+
+    }
+
+    @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
         addErrors();

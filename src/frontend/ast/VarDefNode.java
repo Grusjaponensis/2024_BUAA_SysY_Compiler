@@ -3,9 +3,23 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.constant.IRConstArray;
+import ir.constant.IRConstInt;
+import ir.instr.*;
+import ir.type.IRArrayType;
+import ir.type.IRBasicType;
+import ir.type.IRPointerType;
+import ir.type.IRType;
+import symbol.Symbol;
 import symbol.SymbolTable;
 import symbol.Var;
 import util.Debug;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.stream.IntStream;
 
 /**
  * {@code VarDef -> Ident [ '[' ConstExp ']' ] | Ident [ '[' ConstExp ']' ] '=' InitVal}
@@ -62,6 +76,100 @@ public class VarDefNode extends ASTNode {
         }
         if (initVal != null) {
             initVal.analyzeSemantic(table);
+        }
+    }
+
+    public void generateIR(SymbolTable table, boolean isGlobal) {
+        if (isGlobal) {
+            generateGlobalVar(table);
+        } else {
+            generateLocalVar(table);
+        }
+    }
+
+    private void generateGlobalVar(SymbolTable table) {
+        Symbol symbol = table.find(identifier.name());
+        Var var = (Var) symbol;
+        IRGlobal globalVar;
+        IRType contentType = var.getValueType().mapToIRType();
+        if (constExp != null) {
+            // array
+            int arraySize = constExp.calculateConstVal(table);
+            ArrayList<Integer> initVals = new ArrayList<>(Collections.nCopies(arraySize, 0));
+            if (initVal != null) {
+                // has init values
+                ArrayList<Integer> partInitVals = initVal.getConstInitValueArray(table);
+                IntStream.range(0, partInitVals.size()).forEach(i -> initVals.set(i, partInitVals.get(i)));
+            }
+            if (contentType == IRBasicType.I8) {
+                // type cast
+                IntStream.range(0, arraySize).forEach(i -> initVals.set(i, initVals.get(i) & 0xff));
+            }
+            var.setArrayInitVal(initVals);
+            globalVar = new IRGlobal(
+                    new IRArrayType(arraySize, contentType),
+                    var.getName(), false,
+                    new IRConstArray(contentType, initVals)
+            );
+        } else {
+            int initValue = 0;
+            if (this.initVal != null) {
+                initValue = initVal.getSingleConstInitValue(table);
+            }
+            if (contentType == IRBasicType.I8) {
+                initValue &= 0xff;
+            }
+            var.setInitVal(initValue);
+            globalVar = new IRGlobal(contentType, var.getName(), false, new IRConstInt(contentType, initValue));
+        }
+        symbol.setIrValue(globalVar);
+        IRBuilder.getInstance().addGlobalVar(globalVar);
+        Debug.log("[Add global variable]:\n" + globalVar);
+    }
+
+    private void generateLocalVar(SymbolTable table) {
+        Symbol symbol = table.find(identifier.name());
+        Var var = (Var) symbol;
+        IRType contentType = var.getValueType().mapToIRType();
+        if (constExp != null) {
+            // local array
+            int arraySize = constExp.calculateConstVal(table);
+            IRInstr alloca = new IRAlloca(
+                    new IRArrayType(arraySize, contentType), IRBuilder.getInstance().localReg(), "alloca: " + var.getName()
+            );
+            IRBuilder.getInstance().addInstr(alloca);
+            symbol.setIrValue(alloca);
+            if (initVal != null) {
+                ArrayList<IRValue> initVals = initVal.getInitValArray(table);
+                for (int i = 0; i < initVals.size(); i++) {
+                    IRValue initValue_i = initVals.get(i);
+                    IRInstr elemPtr = new IRGetElemPtr(
+                            // pointer type will automatically add by the constructor
+                            contentType, IRBuilder.getInstance().localReg(),
+                            alloca, new IRConstInt(contentType, i), "ptr: " + var.getName() + "[" + i + "]"
+                    );
+                    IRBuilder.getInstance().addInstr(elemPtr);
+                    // type check
+                    if (initValue_i.type() != ((IRPointerType) elemPtr.type()).getObjectType()) {
+                        initValue_i = IRTypeCast.typeCast(initValue_i, elemPtr);
+                    }
+                    IRBuilder.getInstance().addInstr(new IRStore(initValue_i, elemPtr));
+                }
+            }
+        } else {
+            IRInstr alloca = new IRAlloca(contentType, IRBuilder.getInstance().localReg(), "alloca: " + var.getName());
+            IRBuilder.getInstance().addInstr(alloca);
+            symbol.setIrValue(alloca);
+            if (initVal != null) {
+                IRValue initValue = initVal.getSingleInitVal(table);
+                // type check
+                if (initValue.type() != ((IRPointerType) alloca.type()).getObjectType()) {
+                    initValue = IRTypeCast.typeCast(initValue, alloca);
+                }
+                IRBuilder.getInstance().addInstr(
+                        new IRStore(initValue, alloca, "store: " + initValue.name() + " -> " + var.getName())
+                );
+            }
         }
     }
 

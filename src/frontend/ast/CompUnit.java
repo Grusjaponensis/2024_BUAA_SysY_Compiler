@@ -60,6 +60,12 @@ public class CompUnit extends ASTNode {
         mainFuncDefNode.analyzeSemantic(symbolTable);
     }
 
+    public void generateIR() {
+        declNodes.forEach(decl -> decl.generateIR(symbolTable, true));
+        funcDefNodes.forEach(func -> func.generateIR(symbolTable));
+        mainFuncDefNode.generateIR();
+    }
+
     /// for output requirement
     public String output() {
         return this.symbolTable.output();

@@ -41,6 +41,10 @@ public class VarDeclNode extends ASTNode {
         varDefNodes.forEach(var -> var.analyzeSemantic(table, bType));
     }
 
+    public void generateIR(SymbolTable table, boolean isGlobal) {
+        varDefNodes.forEach(node -> node.generateIR(table, isGlobal));
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();

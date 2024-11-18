@@ -23,14 +23,6 @@ public class TokenList {
 
     public Token prev() { return tokens.get(index - 1); }
 
-    public Token prev(int k) {
-        if (index - k < 0) {
-            throw new NoSuchElementException("Cannot retrieve the " + k + "th previous token before" + tokens.get(index)
-                    + ": only " + (index + 1) + " token(s) available.");
-        }
-        return tokens.get(index - k);
-    }
-
     public void advance() { this.index++; }
 
     public int getIndex() { return index; }

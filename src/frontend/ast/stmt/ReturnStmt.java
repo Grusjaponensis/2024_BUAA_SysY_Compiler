@@ -7,6 +7,13 @@ import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.instr.IRInstr;
+import ir.instr.IRInstrType;
+import ir.instr.IRRet;
+import ir.instr.IRTypeCast;
+import ir.type.IRBasicType;
 import symbol.SymbolTable;
 import symbol.ValueType;
 import util.Debug;
@@ -58,6 +65,29 @@ public class ReturnStmt extends ASTNode implements Statement {
         }
         if (returnExp != null) {
             returnExp.analyzeSemantic(table);
+        }
+    }
+
+    @Override
+    public void generateIR(SymbolTable table) {
+        if (returnExp != null) {
+            IRValue returnValue = returnExp.generateIR(table);
+            ValueType returnType = table.getFuncReturnType();
+            if (!returnType.match(returnValue.type())) {
+                IRInstr typeCast = new IRTypeCast(
+                        IRBuilder.getInstance().localReg(),
+                        returnType == ValueType.Int ? IRInstrType.Zext : IRInstrType.Trunc,
+                        returnValue,
+                        returnType.mapToIRType()
+                );
+                IRBuilder.getInstance().addInstr(typeCast);
+                // update new return value with result of type cast.
+                returnValue = typeCast;
+            }
+            IRBuilder.getInstance().addInstr(new IRRet(returnType.mapToIRType(), returnValue));
+        } else {
+            // void function
+            IRBuilder.getInstance().addInstr(new IRRet(IRBasicType.Void, null));
         }
     }
 

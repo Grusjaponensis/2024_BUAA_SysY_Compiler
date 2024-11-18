@@ -93,6 +93,10 @@ public class StmtNode extends ASTNode {
         stmt.analyzeSemantic(table);
     }
 
+    public void generateIR(SymbolTable table) {
+        stmt.generateIR(table);
+    }
+
     public Statement getStmt() { return stmt; }
 
     @Override

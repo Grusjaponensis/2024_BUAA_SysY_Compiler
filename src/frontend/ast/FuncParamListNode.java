@@ -2,6 +2,10 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRFuncParam;
+import ir.IRValue;
+import ir.type.IRPointerType;
+import ir.type.IRType;
 import symbol.SymbolTable;
 import symbol.ValueType;
 import util.Debug;
@@ -50,6 +54,31 @@ public class FuncParamListNode extends ASTNode {
         paramValues.add(extractor.apply(funcParam));
         otherFuncParams.forEach(param -> paramValues.add(extractor.apply(param)));
         return paramValues;
+    }
+
+    public ArrayList<IRValue> getParamsIRValues(SymbolTable table) {
+        ArrayList<IRValue> paramValues = new ArrayList<>();
+        // FIXME: a piece of shit, fuck everybody
+        IRType type = funcParam.isArray() ?
+                new IRPointerType(funcParam.getType().valueType().mapToIRType()) :
+                funcParam.getType().valueType().mapToIRType();
+        IRValue param = new IRFuncParam(type, "%" + funcParam.getName());
+        paramValues.add(param);
+        table.find(funcParam.getName()).setIrValue(param);
+        for (FuncParamNode node : otherFuncParams) {
+            type = node.isArray() ?
+                    new IRPointerType(node.getType().valueType().mapToIRType()) :
+                    node.getType().valueType().mapToIRType();
+            param = new IRFuncParam(type, "%" + node.getName());
+            table.find(node.getName()).setIrValue(param);
+            paramValues.add(param);
+        }
+        return paramValues;
+    }
+
+    public void generateIR(SymbolTable table) {
+        funcParam.generateIR(table);
+        otherFuncParams.forEach(param -> param.generateIR(table));
     }
 
     @Override

@@ -39,6 +39,11 @@ public class BreakStmt extends ASTNode implements Statement {
     }
 
     @Override
+    public void generateIR(SymbolTable table) {
+
+    }
+
+    @Override
     public String toString() {
         addErrors();
         if (Debug.DEBUG_STATE) {

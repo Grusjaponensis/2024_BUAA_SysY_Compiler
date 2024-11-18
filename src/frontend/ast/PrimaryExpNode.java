@@ -2,6 +2,9 @@ package frontend.ast;
 
 import exception.*;
 import frontend.token.*;
+import ir.IRValue;
+import ir.constant.IRConstInt;
+import ir.type.IRBasicType;
 import symbol.*;
 import util.Debug;
 
@@ -105,6 +108,26 @@ public class PrimaryExpNode extends ASTNode {
                 }
             }
         }
+    }
+
+    public int evaluate(SymbolTable table) {
+        if (type == Type.Char) {
+            return character.c();
+        } else if (type == Type.Num) {
+            return number.number();
+        } else if (type == Type.Exp) {
+            return expNode.evaluate(table);
+        } else {
+            return lValNode.evaluate(table);
+        }
+    }
+
+    public IRValue generateIR(SymbolTable table) {
+        return switch (type) {
+            case Exp -> expNode.generateIR(table);
+            case LVal -> lValNode.generateIR(table, false);
+            case Num, Char -> new IRConstInt(IRBasicType.I32, (number == null ? character.c() : number.number()));
+        };
     }
 
     @Override

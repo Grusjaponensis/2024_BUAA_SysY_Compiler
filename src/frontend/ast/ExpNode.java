@@ -1,6 +1,7 @@
 package frontend.ast;
 
 import frontend.token.TokenList;
+import ir.IRValue;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -21,6 +22,14 @@ public class ExpNode extends ASTNode {
 
     public void analyzeSemantic(SymbolTable table) {
         addExp.analyzeSemantic(table);
+    }
+
+    public int evaluate(SymbolTable table) {
+        return addExp.evaluate(table);
+    }
+
+    public IRValue generateIR(SymbolTable table) {
+        return addExp.generateIR(table);
     }
 
     @Override

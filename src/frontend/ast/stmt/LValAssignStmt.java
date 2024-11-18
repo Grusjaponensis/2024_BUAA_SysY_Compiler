@@ -9,6 +9,11 @@ import frontend.ast.LValNode;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.instr.*;
+import ir.type.IRPointerType;
+import symbol.Symbol;
 import symbol.SymbolTable;
 import symbol.Var;
 import util.Debug;
@@ -77,6 +82,37 @@ public class LValAssignStmt extends ASTNode implements Statement {
         if (type == Type.Exp) {
             exp.analyzeSemantic(table);
         }
+    }
+
+    @Override
+    public void generateIR(SymbolTable table) {
+        Symbol symbol = table.find(lVal.getName());
+        // the allocated ptr
+        IRValue ptr = symbol.getIrValue();
+        IRValue value;
+        if (lVal.isArrayCall()) {
+            // update ptr to use elemPtr
+            ptr = lVal.generateIR(table, true);
+        }
+
+        if (type == Type.Exp) {
+            value = this.exp.generateIR(table);
+        } else {
+            // I/O func call
+            IRInstr inputInstr = new IRInput(
+                    IRBuilder.getInstance().localReg(),
+                    type == Type.GetInt ? IRInstrType.GetInt : IRInstrType.GetChar
+            );
+            IRBuilder.getInstance().addInstr(inputInstr);
+            value = inputInstr;
+        }
+        //.type check
+        if (value.type() != ((IRPointerType) ptr.type()).getObjectType()) {
+            value = IRTypeCast.typeCast(value, ptr);
+        }
+        IRBuilder.getInstance().addInstr(
+                new IRStore(value, ptr, "store: " + value.name() + " -> " + symbol.getName())
+        );
     }
 
     @Override

@@ -4,7 +4,8 @@ public class Debug {
     public static final boolean DEBUG_STATE = false;
 
     public static final boolean STAGE_LEXER = false;
-    public static final boolean STAGE_PARSER = true;
+    public static final boolean STAGE_PARSER = false;
+    public static final boolean STAGE_OPTIMIZATION = false;
 
     public static final String TERM_RESET = "\u001B[0m";
     public static final String TERM_RED = "\u001B[1;31m";
@@ -14,6 +15,7 @@ public class Debug {
     public static final String TERM_MAGENTA = "\u001B[1;35m";
     public static final String TERM_CYAN = "\u001B[1;36m";
     public static final String TERM_BOLD = "\u001B[1m";
+    public static final String TERM_ITALIC = "\u001B[3m";
 
 
     public static void log(String message) {

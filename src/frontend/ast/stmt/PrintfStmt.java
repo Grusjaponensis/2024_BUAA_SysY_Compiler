@@ -9,6 +9,12 @@ import frontend.ast.StringConst;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.instr.IRPutCh;
+import ir.instr.IRPutInt;
+import ir.instr.IRTypeCast;
+import ir.type.IRBasicType;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -64,6 +70,34 @@ public class PrintfStmt extends ASTNode implements Statement {
             return;
         }
         params.forEach(e -> e.analyzeSemantic(table));
+    }
+
+    @Override
+    public void generateIR(SymbolTable table) {
+        int index = 0;
+        String formatString = formattedString.value();
+        for (int i = 0; i < formatString.length(); i++) {
+            if (formatString.charAt(i) == '%') {
+                if (i + 1 >= formatString.length()) {
+                    IRBuilder.getInstance().addInstr(
+                            new IRPutCh('%')
+                    );
+                    break;
+                }
+                if (formatString.charAt(i + 1) == 'd') {
+                    IRValue value = params.get(index++).generateIR(table);
+                    IRBuilder.getInstance().addInstr(new IRPutInt(IRTypeCast.typeCast(value, IRBasicType.I32)));
+                    i++;
+                    continue;
+                } else if (formatString.charAt(i + 1) == 'c') {
+                    IRValue value = params.get(index++).generateIR(table);
+                    IRBuilder.getInstance().addInstr(new IRPutCh(value));
+                    i++;
+                    continue;
+                }
+            }
+            IRBuilder.getInstance().addInstr(new IRPutCh(formatString.charAt(i)));
+        }
     }
 
     @Override

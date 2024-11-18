@@ -41,6 +41,14 @@ public class BlockItemNode extends ASTNode {
         }
     }
 
+    public void generateIR(SymbolTable table) {
+        if (isDecl) {
+            decl.generateIR(table, false);
+        } else {
+            stmt.generateIR(table);
+        }
+    }
+
     public Statement getStmt() { return stmt.getStmt(); }
 
     public boolean isDecl() { return isDecl; }

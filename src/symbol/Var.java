@@ -40,9 +40,9 @@ public class Var extends Symbol {
     @Override
     public String toString() {
         if (Debug.DEBUG_STATE) {
-            return String.format("%s[%s]%s name: %s type: %s, declared: line %d%n",
+            return String.format("%s[%-6s]%s name: %-6s, type: %-6s, declared: line %d%n",
                     Debug.TERM_GREEN, isConst ? "Const" : "Var", Debug.TERM_RESET, name, type + (isArray ? "[]" : ""), lineNum);
         }
-        return " " + name + " " + (isConst ? "Const" : "") + type + (isArray ? "Array" : "") + "\n";
+        return " " + name + ", " + (isConst ? "Const" : "") + type + (isArray ? "Array" : "") + "\n";
     }
 }

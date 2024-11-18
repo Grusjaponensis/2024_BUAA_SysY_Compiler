@@ -7,6 +7,7 @@ import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * {@code ConstInitVal -> ConstExp | '{' [ ConstExp { ',' ConstExp } ] '}' | StringConst}
@@ -66,6 +67,19 @@ public class ConstInitValNode extends ASTNode {
             case SingleConstExp -> constExp.analyzeSemantic(table);
             case ArrayLike -> constExpNodes.forEach(exp -> exp.analyzeSemantic(table));
         }
+    }
+
+    public int getSingleInitValue(SymbolTable table) {
+        return constExp.calculateConstVal(table);
+    }
+
+    public ArrayList<Integer> getInitValueArray(SymbolTable table) {
+        if (type == Type.ArrayLike) {
+            return constExpNodes.stream()
+                    .map(node -> node.calculateConstVal(table))
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+        return stringConst.value().chars().boxed().collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override

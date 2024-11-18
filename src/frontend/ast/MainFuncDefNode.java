@@ -2,9 +2,15 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBasicBlock;
+import ir.IRBuilder;
+import ir.IRFunc;
+import ir.type.IRBasicType;
 import symbol.SymbolTable;
 import symbol.ValueType;
 import util.Debug;
+
+import java.util.ArrayList;
 
 /**
  * {@code MainFuncDef -> 'int' 'main' '(' ')' Block}
@@ -34,6 +40,16 @@ public class MainFuncDefNode extends ASTNode {
         table.insertChildTable(symbolTable);
         body.analyzeSemantic(symbolTable);
         body.checkReturnStmt(ValueType.Int, endLineNum);
+    }
+
+    public void generateIR() {
+        IRFunc irFunc = new IRFunc("main", IRBasicType.I32, new ArrayList<>());
+        IRBuilder.getInstance().addFunc(irFunc);
+        IRBasicBlock newBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        irFunc.addBasicBlock(newBlock);
+        symbolTable.setInFuncDef(ValueType.Int);
+        body.generateIR(symbolTable);
+        symbolTable.setInFuncDef(null);
     }
 
     @Override

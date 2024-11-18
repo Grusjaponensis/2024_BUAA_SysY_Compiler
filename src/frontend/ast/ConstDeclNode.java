@@ -46,6 +46,10 @@ public class ConstDeclNode extends ASTNode {
         constDefNodes.forEach(constDef -> constDef.analyzeSemantic(table, bType));
     }
 
+    public void generateIR(SymbolTable table, boolean isGlobal) {
+        constDefNodes.forEach(constDef -> constDef.generateIR(table, isGlobal));
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();

@@ -6,4 +6,6 @@ public interface Statement {
     void parse();
 
     void analyzeSemantic(SymbolTable table);
+
+    void generateIR(SymbolTable table);
 }

@@ -3,10 +3,14 @@ package frontend.ast;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRValue;
+import ir.constant.IRConstInt;
+import ir.type.IRBasicType;
 import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * {@code InitVal -> Exp | '{' [ Exp { ',' Exp } ] '}' | StringConst}
@@ -57,6 +61,37 @@ public class InitValNode extends ASTNode {
             case SimpleExp -> expNode.analyzeSemantic(table);
             case MultipleExp -> expList.forEach(exp -> exp.analyzeSemantic(table));
         }
+    }
+
+    public int getSingleConstInitValue(SymbolTable table) {
+        return expNode.evaluate(table);
+    }
+
+    public ArrayList<Integer> getConstInitValueArray(SymbolTable table) {
+        if (type == Type.MultipleExp) {
+            return expList.stream()
+                    .map(node -> node.evaluate(table))
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+        return strConst.value().chars().boxed().collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public IRValue getSingleInitVal(SymbolTable table) {
+        return expNode.generateIR(table);
+    }
+
+    public ArrayList<IRValue> getInitValArray(SymbolTable table) {
+        if (type == Type.MultipleExp) {
+            return expList.stream()
+                    .map(node -> node.generateIR(table))
+                    .collect(Collectors.toCollection(ArrayList::new));
+        }
+        // using a sequence of store
+        ArrayList<IRValue> irValues = new ArrayList<>();
+        for (char c : strConst.value().toCharArray()) {
+            irValues.add(new IRConstInt(IRBasicType.I8, c));
+        }
+        return irValues;
     }
 
     @Override

@@ -20,7 +20,11 @@ public class ConstExpNode extends ASTNode {
     }
 
     public void analyzeSemantic(SymbolTable table) {
+        addExp.analyzeSemantic(table);
+    }
 
+    public int calculateConstVal(SymbolTable table) {
+        return addExp.evaluate(table);
     }
 
     @Override

@@ -5,6 +5,10 @@ import exception.ErrorCollector;
 import exception.ErrorType;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRFunc;
+import ir.IRValue;
+import ir.instr.IRTypeCast;
+import ir.type.IRBasicType;
 import symbol.Func;
 import symbol.SymbolTable;
 import util.Debug;
@@ -56,6 +60,21 @@ public class FuncCallParamsNode extends ASTNode {
         });
         // unset current function
         table.setFuncToCall(null);
+    }
+
+    public ArrayList<IRValue> generateIR(SymbolTable table, Func func) {
+        ArrayList<IRValue> params = new ArrayList<>();
+        this.params.forEach(o -> params.add(o.generateIR(table)));
+        // type check
+        ArrayList<IRValue> paramsInTable = ((IRFunc) func.getIrValue()).getParams();
+        assert paramsInTable.size() == params.size();
+        for (int i = 0; i < paramsInTable.size(); i++) {
+            if (params.get(i).type() instanceof IRBasicType type && type != paramsInTable.get(i).type()) {
+                IRValue newIR = IRTypeCast.typeCast(params.get(i), paramsInTable.get(i).type());
+                params.set(i, newIR);
+            }
+        }
+        return params;
     }
 
     @Override
