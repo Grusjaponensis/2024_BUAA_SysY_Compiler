@@ -7,6 +7,9 @@ import frontend.ast.StmtNode;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBasicBlock;
+import ir.IRBuilder;
+import ir.instr.IRJump;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -14,13 +17,6 @@ import util.Debug;
  * {@code ForStmt -> 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt}
  */
 public class ForStmt extends ASTNode implements Statement {
-    /// {@code N} - condition or statement in this place is omitted</br>
-    /// {@code Y} - condition or statement here exists</br>
-    /// e.g. {@code NNY} - ForStmt1: Omitted, Cond: Omitted, ForStmt2: Exist
-    public enum Type {
-        NNN, NNY, NYN, NYY, YNN, YNY, YYN, YYY
-    }
-    private Type type;
     private ForStmtNode stmt1;
     private CondNode cond;
     private ForStmtNode stmt2;
@@ -32,12 +28,10 @@ public class ForStmt extends ASTNode implements Statement {
 
     @Override
     public void parse() {
-        boolean isStmt1Exist = false, isStmt2Exist = false, isCondExist = false;
         expect(TokenType.ForKeyword, "for");
         expect(TokenType.LParenthesis, "(");
         Token token = tokens.get();
         if (!token.isTypeOf(TokenType.Semicolon)) {
-            isStmt1Exist = true;
             stmt1 = new ForStmtNode(tokens, depth + 1);
             stmt1.parse();
         }
@@ -46,7 +40,6 @@ public class ForStmt extends ASTNode implements Statement {
 
         token = tokens.get();
         if (!token.isTypeOf(TokenType.Semicolon)) {
-            isCondExist = true;
             cond = new CondNode(tokens, depth + 1);
             cond.parse();
         }
@@ -55,7 +48,6 @@ public class ForStmt extends ASTNode implements Statement {
 
         token = tokens.get();
         if (!token.isTypeOf(TokenType.RParenthesis)) {
-            isStmt2Exist = true;
             stmt2 = new ForStmtNode(tokens, depth + 1);
             stmt2.parse();
         }
@@ -63,10 +55,6 @@ public class ForStmt extends ASTNode implements Statement {
 
         body = new StmtNode(tokens, depth + 1);
         body.parse();
-
-        // binary-like types
-        int index = (isStmt2Exist ? 1 : 0) | (isCondExist ? 1 : 0) << 1 | (isStmt1Exist ? 1 : 0) << 2;
-        type = Type.values()[index];
     }
 
     @Override
@@ -90,7 +78,51 @@ public class ForStmt extends ASTNode implements Statement {
 
     @Override
     public void generateIR(SymbolTable table) {
+        IRBasicBlock condBlock, loopBodyBlock, secondStmtBlock, endForBlock;
+        condBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        loopBodyBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        secondStmtBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        endForBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        // record in table
+        IRBuilder.getInstance().enterLoopWithBlock(
+                endForBlock,
+                stmt2 != null ? secondStmtBlock : cond != null ? condBlock : loopBodyBlock
+        );
+        if (stmt1 != null) {
+            // first stmt belongs to previous basic block before for loop
+            stmt1.generateIR(table);
+        }
+        if (cond != null) {
+            // if cond stmt exists, jump to cond bb, else jump to loop body
+            IRBuilder.getInstance().addInstr(new IRJump(condBlock));
+            IRBuilder.getInstance().addBasicBlock(condBlock);
 
+            // for condition
+            cond.generateIR(table, loopBodyBlock, endForBlock);
+        } else {
+            IRBuilder.getInstance().addInstr(new IRJump(loopBodyBlock));
+        }
+
+        // loop body
+        IRBuilder.getInstance().addBasicBlock(loopBodyBlock);
+        body.generateIR(table);
+
+        if (stmt2 != null) {
+            // if stmt2 is not null, jump to stmt2 bb
+            IRBuilder.getInstance().addInstr(new IRJump(secondStmtBlock));
+            IRBuilder.getInstance().addBasicBlock(secondStmtBlock);
+
+            stmt2.generateIR(table);
+        }
+        // after body and stmt2, if cond is not null, jump to cond, else jump to body
+        if (cond != null) {
+            IRBuilder.getInstance().addInstr(new IRJump(condBlock));
+        } else {
+            IRBuilder.getInstance().addInstr(new IRJump(loopBodyBlock));
+        }
+
+        IRBuilder.getInstance().addBasicBlock(endForBlock);
+        IRBuilder.getInstance().exitLoop();
     }
 
     @Override

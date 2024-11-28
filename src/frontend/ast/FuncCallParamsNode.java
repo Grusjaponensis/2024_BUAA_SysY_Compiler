@@ -70,8 +70,8 @@ public class FuncCallParamsNode extends ASTNode {
         assert paramsInTable.size() == params.size();
         for (int i = 0; i < paramsInTable.size(); i++) {
             if (params.get(i).type() instanceof IRBasicType type && type != paramsInTable.get(i).type()) {
-                IRValue newIR = IRTypeCast.typeCast(params.get(i), paramsInTable.get(i).type());
-                params.set(i, newIR);
+                IRValue afterCast = IRTypeCast.typeCast(params.get(i), paramsInTable.get(i).type());
+                params.set(i, afterCast);
             }
         }
         return params;
@@ -82,8 +82,7 @@ public class FuncCallParamsNode extends ASTNode {
         StringBuilder b = new StringBuilder();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
-            b.append(space);
-            b.append("<FuncCallParams>\n");
+            b.append(space).append("<FuncCallParams>\n");
             params.forEach(b::append);
             b.append("\n");
             return b.toString();

@@ -25,8 +25,10 @@ public class IRIcmp extends IRInstr {
      */
     @Override
     public String toString() {
-        return name + " = icmp " + type.toString().toLowerCase() + operand1.type() +
-                " " + operand1.name() +
-                ", " + operand2.name();
+        return String.format(
+                "%s = icmp %s %s %s, %s",
+                super.name, instrType.toString().toLowerCase(),
+                operand1.type(), operand1.name(), operand2.name()
+        );
     }
 }

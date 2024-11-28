@@ -67,11 +67,10 @@ public class MulExpNode extends ASTNode {
 
     public IRValue generateIR(SymbolTable table) {
         IRValue u = unaryExpNodes.get(0).generateIR(table);
-
         for (int i = 1; i < unaryExpNodes.size(); i++) {
             IRValue v = unaryExpNodes.get(i).generateIR(table);
             TokenType operator = operators.get(i);
-
+            // perform the operation
             IRInstr operation = generateArithmeticOperation(u, v, operator);
             IRBuilder.getInstance().addInstr(operation);
             u = operation;
@@ -80,6 +79,7 @@ public class MulExpNode extends ASTNode {
     }
 
     private IRInstr generateArithmeticOperation(IRValue u, IRValue v, TokenType operator) {
+        // perform the operator specified operation between u and v
         IRInstrType instrType;
         if (operator == TokenType.MultiplyOperator) {
             instrType = IRInstrType.Mul;

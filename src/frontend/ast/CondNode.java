@@ -1,6 +1,7 @@
 package frontend.ast;
 
 import frontend.token.TokenList;
+import ir.IRBasicBlock;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -21,6 +22,10 @@ public class CondNode extends ASTNode {
 
     public void analyzeSemantic(SymbolTable table) {
         cond.analyzeSemantic(table);
+    }
+
+    public void generateIR(SymbolTable table, IRBasicBlock destTrue, IRBasicBlock destFalse) {
+        cond.generateIR(table, destTrue, destFalse);
     }
 
     @Override

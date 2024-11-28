@@ -2,6 +2,14 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.constant.IRConstInt;
+import ir.instr.IRIcmp;
+import ir.instr.IRInstr;
+import ir.instr.IRInstrType;
+import ir.instr.IRTypeCast;
+import ir.type.IRBasicType;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -40,6 +48,35 @@ public class EqExpNode extends ASTNode {
 
     public void analyzeSemantic(SymbolTable table) {
         relExpNodes.forEach(exp -> exp.analyzeSemantic(table));
+    }
+
+    public IRValue generateIR(SymbolTable table) {
+        IRValue u = relExpNodes.get(0).generateIR(table);
+        if (relExpNodes.size() == 1) {
+            // Notice to type check before use
+            IRInstr icmp = new IRIcmp(
+                    IRBuilder.getInstance().localReg(),
+                    IRInstrType.Ne,
+                    IRTypeCast.typeCast(u, IRBasicType.I32), new IRConstInt(IRBasicType.I32, 0),
+                    String.format("icmp: %s %s %s", u.name(), "!=", 0)
+            );
+            IRBuilder.getInstance().addInstr(icmp);
+            return icmp;
+        }
+        IRValue v;
+        for (int i = 1; i < relExpNodes.size(); i++) {
+            v = relExpNodes.get(i).generateIR(table);
+            // Notice to type check before use
+            IRInstr icmp = new IRIcmp(
+                    IRBuilder.getInstance().localReg(),
+                    operators.get(i) == TokenType.EQOperator ? IRInstrType.Eq : IRInstrType.Ne,
+                    IRTypeCast.typeCast(u, IRBasicType.I32), IRTypeCast.typeCast(v, IRBasicType.I32),
+                    String.format("icmp: %s %s %s", u.name(), operators.get(i) == TokenType.EQOperator ? "==" : "!=", 0)
+            );
+            IRBuilder.getInstance().addInstr(icmp);
+            u = icmp;
+        }
+        return u;
     }
 
     @Override

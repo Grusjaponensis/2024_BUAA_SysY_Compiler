@@ -57,11 +57,13 @@ public class FuncParamListNode extends ASTNode {
     }
 
     public ArrayList<IRValue> getParamsIRValues(SymbolTable table) {
-        ArrayList<IRValue> paramValues = new ArrayList<>();
-        // FIXME: a piece of shit, fuck everybody
-        IRType type = funcParam.isArray() ?
-                new IRPointerType(funcParam.getType().valueType().mapToIRType()) :
-                funcParam.getType().valueType().mapToIRType();
+        final ArrayList<IRValue> paramValues = new ArrayList<>();
+        // generating parameter IR values using types and names
+        IRType type = funcParam.getType().valueType().mapToIRType();
+        if (funcParam.isArray()) {
+            // if param is an array (e.g. int a[]), then embed it using pointer type
+            type = new IRPointerType(type);
+        }
         IRValue param = new IRFuncParam(type, "%" + funcParam.getName());
         paramValues.add(param);
         table.find(funcParam.getName()).setIrValue(param);

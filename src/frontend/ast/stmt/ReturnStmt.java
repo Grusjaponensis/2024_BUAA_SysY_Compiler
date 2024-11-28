@@ -9,8 +9,6 @@ import frontend.token.TokenList;
 import frontend.token.TokenType;
 import ir.IRBuilder;
 import ir.IRValue;
-import ir.instr.IRInstr;
-import ir.instr.IRInstrType;
 import ir.instr.IRRet;
 import ir.instr.IRTypeCast;
 import ir.type.IRBasicType;
@@ -74,15 +72,8 @@ public class ReturnStmt extends ASTNode implements Statement {
             IRValue returnValue = returnExp.generateIR(table);
             ValueType returnType = table.getFuncReturnType();
             if (!returnType.match(returnValue.type())) {
-                IRInstr typeCast = new IRTypeCast(
-                        IRBuilder.getInstance().localReg(),
-                        returnType == ValueType.Int ? IRInstrType.Zext : IRInstrType.Trunc,
-                        returnValue,
-                        returnType.mapToIRType()
-                );
-                IRBuilder.getInstance().addInstr(typeCast);
                 // update new return value with result of type cast.
-                returnValue = typeCast;
+                returnValue = IRTypeCast.typeCast(returnValue, returnType.mapToIRType());
             }
             IRBuilder.getInstance().addInstr(new IRRet(returnType.mapToIRType(), returnValue));
         } else {

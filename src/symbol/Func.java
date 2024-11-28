@@ -35,10 +35,6 @@ public class Func extends Symbol {
 
     public ValueType getReturnType() { return returnType; }
 
-    public void setParamTypes(ArrayList<ValueType> paramTypes) { this.paramTypes = paramTypes; }
-
-    public void setIsParamsArray(ArrayList<Boolean> isParamsArray) { this.isParamsArray = isParamsArray; }
-
     @Override
     public String toString() {
         if (!Debug.DEBUG_STATE) {

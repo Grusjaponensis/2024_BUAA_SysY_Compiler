@@ -174,7 +174,7 @@ public class UnaryExpNode extends ASTNode {
                 IRInstr compareTo0 = new IRIcmp(IRBuilder.getInstance().localReg(), IRInstrType.Eq, u, zero);
                 IRBuilder.getInstance().addInstr(compareTo0);
                 // zero extends result to 32 bits
-                return new IRTypeCast(IRBuilder.getInstance().localReg(), IRInstrType.Zext, compareTo0, IRBasicType.I32);
+                return IRTypeCast.typeCast(compareTo0, IRBasicType.I32);
             }
             // ignore +
             return u;

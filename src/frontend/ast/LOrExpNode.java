@@ -2,6 +2,8 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBasicBlock;
+import ir.IRBuilder;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -36,6 +38,18 @@ public class LOrExpNode extends ASTNode {
 
     public void analyzeSemantic(SymbolTable table) {
         andExpNodes.forEach(exp -> exp.analyzeSemantic(table));
+    }
+
+    public void generateIR(SymbolTable table, IRBasicBlock destTrue, IRBasicBlock destFalse) {
+        for (int i = 0; i < andExpNodes.size() - 1; i++) {
+            // first generate BB for next andExp
+            IRBasicBlock destNext = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+            // if any of these andExp is true, branch to true bb
+            andExpNodes.get(i).generateIR(table, destTrue, destNext);
+            // set BB for the next andExp IR
+            IRBuilder.getInstance().addBasicBlock(destNext);
+        }
+        andExpNodes.get(andExpNodes.size() - 1).generateIR(table, destTrue, destFalse);
     }
 
     @Override

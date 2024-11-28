@@ -36,7 +36,7 @@ public class Compiler {
         } catch (CompileError e) {
             ErrorCollector.getInstance().addError(e);
         }
-
+        Debug.log(Debug.TERM_RED + ">>>>>>>> Lexer Output: >>>>>>>>" + Debug.TERM_RESET);
         tokens.forEach(System.out::println);
 
         // generate AST
@@ -66,11 +66,10 @@ public class Compiler {
 
         Debug.log("\n\n" + Debug.TERM_RED + ">>>>>>>> LLVM IR: >>>>>>>>" + Debug.TERM_RESET + "\n");
 
-        String ir = IRBuilder.getInstance().generateIR();
-        System.out.println(ir);
+        System.out.println(IRBuilder.getInstance().generateIR(true));
 
         Path irFile = Paths.get("llvm_ir.txt");
-        Files.writeString(irFile, ir);
+        Files.writeString(irFile, IRBuilder.getInstance().generateIR(false));
 
         Debug.log(Debug.TERM_RED + ">>>>>>>> Program exit... >>>>>>>>" + Debug.TERM_RESET);
     }

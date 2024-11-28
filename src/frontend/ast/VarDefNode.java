@@ -8,10 +8,7 @@ import ir.IRValue;
 import ir.constant.IRConstArray;
 import ir.constant.IRConstInt;
 import ir.instr.*;
-import ir.type.IRArrayType;
-import ir.type.IRBasicType;
-import ir.type.IRPointerType;
-import ir.type.IRType;
+import ir.type.*;
 import symbol.Symbol;
 import symbol.SymbolTable;
 import symbol.Var;
@@ -94,7 +91,7 @@ public class VarDefNode extends ASTNode {
         IRType contentType = var.getValueType().mapToIRType();
         if (constExp != null) {
             // array
-            int arraySize = constExp.calculateConstVal(table);
+            int arraySize = constExp.evaluate(table);
             ArrayList<Integer> initVals = new ArrayList<>(Collections.nCopies(arraySize, 0));
             if (initVal != null) {
                 // has init values
@@ -133,7 +130,7 @@ public class VarDefNode extends ASTNode {
         IRType contentType = var.getValueType().mapToIRType();
         if (constExp != null) {
             // local array
-            int arraySize = constExp.calculateConstVal(table);
+            int arraySize = constExp.evaluate(table);
             IRInstr alloca = new IRAlloca(
                     new IRArrayType(arraySize, contentType), IRBuilder.getInstance().localReg(), "alloca: " + var.getName()
             );

@@ -131,7 +131,7 @@ public class FuncDefNode extends ASTNode {
             // no return stmt (so must be a void func), should append ret
             IRBuilder.getInstance().addInstr(new IRRet(IRBasicType.Void, null));
         } else if (!(body.getLastStmt().getStmt() instanceof ReturnStmt)) {
-            // last stmt is not return stmt, should append
+            // last stmt is not a return stmt, should append
             IRBuilder.getInstance().addInstr(new IRRet(IRBasicType.Void, null));
         }
     }

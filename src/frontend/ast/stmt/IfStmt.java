@@ -5,6 +5,9 @@ import frontend.ast.CondNode;
 import frontend.ast.StmtNode;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBasicBlock;
+import ir.IRBuilder;
+import ir.instr.IRJump;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -55,7 +58,41 @@ public class IfStmt extends ASTNode implements Statement {
 
     @Override
     public void generateIR(SymbolTable table) {
-
+        // bb contains instructions in if body
+        IRBasicBlock ifBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        IRBasicBlock elseBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        // bb contains instructions after if and else body
+        IRBasicBlock endIfBlock = new IRBasicBlock(IRBuilder.getInstance().blockReg());
+        if (type == Type.HasElse) {
+            // if cond is not satisfied, br to else-stmt
+            condition.generateIR(table, ifBlock, elseBlock);
+            IRBuilder.getInstance().addBasicBlock(ifBlock);
+            // all if stmt instr should insert into ifBB
+            ifStmt.generateIR(table);
+            // jump to endIf directly
+            if (!ifStmt.isLastStmtReturn()) {
+                IRBuilder.getInstance().addInstr(new IRJump(endIfBlock));
+            }
+            // IRBuilder.getInstance().addInstr(new IRJump(endIfBlock));
+            IRBuilder.getInstance().addBasicBlock(elseBlock);
+            elseStmt.generateIR(table);
+            // jump to endIf directly
+            if (!elseStmt.isLastStmtReturn()) {
+                IRBuilder.getInstance().addInstr(new IRJump(endIfBlock));
+            }
+            // IRBuilder.getInstance().addInstr(new IRJump(endIfBlock));
+            IRBuilder.getInstance().addBasicBlock(endIfBlock);
+        } else {
+            // if cond is not satisfied, br to endIf-stmt
+            condition.generateIR(table, ifBlock, endIfBlock);
+            IRBuilder.getInstance().addBasicBlock(ifBlock);
+            ifStmt.generateIR(table);
+            if (!ifStmt.isLastStmtReturn()) {
+                IRBuilder.getInstance().addInstr(new IRJump(endIfBlock));
+            }
+            // IRBuilder.getInstance().addInstr(new IRJump(endIfBlock));
+            IRBuilder.getInstance().addBasicBlock(endIfBlock);
+        }
     }
 
     @Override

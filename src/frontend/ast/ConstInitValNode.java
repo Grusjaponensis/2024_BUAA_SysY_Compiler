@@ -70,13 +70,13 @@ public class ConstInitValNode extends ASTNode {
     }
 
     public int getSingleInitValue(SymbolTable table) {
-        return constExp.calculateConstVal(table);
+        return constExp.evaluate(table);
     }
 
     public ArrayList<Integer> getInitValueArray(SymbolTable table) {
         if (type == Type.ArrayLike) {
             return constExpNodes.stream()
-                    .map(node -> node.calculateConstVal(table))
+                    .map(node -> node.evaluate(table))
                     .collect(Collectors.toCollection(ArrayList::new));
         }
         return stringConst.value().chars().boxed().collect(Collectors.toCollection(ArrayList::new));

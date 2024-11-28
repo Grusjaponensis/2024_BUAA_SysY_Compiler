@@ -28,18 +28,25 @@ public class IRModule extends IRValue {
         strings.add(string);
     }
 
-    public String generateIR() {
+    public String generateIR(boolean forPrint) {
         StringBuilder b = new StringBuilder();
-        b.append(moduleInfo).append("'").append(name).append("'")
-                .append(Debug.DEBUG_STATE ? Debug.TERM_RESET : "")
-                .append("\n").append(lib).append("\n");
+        // Choose the appropriate module info
+        String moduleInfoToUse = forPrint ? moduleInfoForPrint : moduleInfo;
+        b.append(moduleInfoToUse).append("'").append(name).append("'");
+        if (forPrint) {
+            b.append(Debug.TERM_RESET);
+        }
+        b.append("\n").append(lib).append("\n");
+        // Append global definitions
         globalDefinitions.forEach(globalDef -> b.append(globalDef).append("\n"));
         if (!globalDefinitions.isEmpty()) {
             b.append("\n");
         }
-        funcDefinitions.forEach(funcDef -> b.append(funcDef.generateIR()));
+        // Append function definitions
+        funcDefinitions.forEach(funcDef -> b.append(funcDef.generateIR(forPrint)));
         return b.toString();
     }
+
 
     private static final String lib = """
             declare i32 @getchar()
@@ -48,5 +55,6 @@ public class IRModule extends IRValue {
             declare void @putch(i32)
             """;
 
-    private static final String moduleInfo = (Debug.DEBUG_STATE ? Debug.TERM_ITALIC : "") + "; ModuleID = " ;
+    private static final String moduleInfo = "; ModuleID = " ;
+    private static final String moduleInfoForPrint = Debug.TERM_ITALIC + "; ModuleID = " ;
 }

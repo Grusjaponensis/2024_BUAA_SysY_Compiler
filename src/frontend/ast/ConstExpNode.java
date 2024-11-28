@@ -23,7 +23,7 @@ public class ConstExpNode extends ASTNode {
         addExp.analyzeSemantic(table);
     }
 
-    public int calculateConstVal(SymbolTable table) {
+    public int evaluate(SymbolTable table) {
         return addExp.evaluate(table);
     }
 
@@ -32,13 +32,10 @@ public class ConstExpNode extends ASTNode {
         StringBuilder b = new StringBuilder();
         if (Debug.DEBUG_STATE) {
             String space = "  ".repeat(depth);
-            b.append(space);
-            b.append("<ConstExp>\n");
-            b.append(addExp);
+            b.append(space).append("<ConstExp>\n").append(addExp);
             return b.toString();
         }
-        b.append(addExp);
-        b.append("<ConstExp>\n");
+        b.append(addExp).append("<ConstExp>\n");
         return b.toString();
     }
 }

@@ -13,7 +13,7 @@ public enum IRInstrType {
     Jump, Branch,
 
     // logical operation
-    Eq, Ne,
+    Eq, Ne, Sgt, Sge, Slt, Sle,
 
     // func call
     Call, Ret,

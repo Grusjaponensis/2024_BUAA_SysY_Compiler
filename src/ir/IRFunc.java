@@ -28,12 +28,17 @@ public class IRFunc extends IRValue {
 
     public ArrayList<IRValue> getParams() { return params; }
 
-    public String generateIR() {
+    public IRBasicBlock currentBlock() { return basicBlocks.get(basicBlocks.size() - 1); }
+
+    public String generateIR(boolean forPrint) {
         StringBuilder b = new StringBuilder();
         b.append("define ").append(returnType).append(" ").append(name).append("(");
         b.append(params.stream().map(IRValue::toString).collect(Collectors.joining(", ")));
         b.append(") {\n");
-        basicBlocks.forEach(b::append);
+        String blockString = basicBlocks.stream()
+                .map(block -> block.generateIR(forPrint))
+                .collect(Collectors.joining("\n"));
+        b.append(blockString);
         b.append("}\n\n");
         return b.toString();
     }

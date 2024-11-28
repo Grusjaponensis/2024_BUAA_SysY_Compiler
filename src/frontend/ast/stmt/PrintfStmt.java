@@ -91,7 +91,7 @@ public class PrintfStmt extends ASTNode implements Statement {
                     continue;
                 } else if (formatString.charAt(i + 1) == 'c') {
                     IRValue value = params.get(index++).generateIR(table);
-                    IRBuilder.getInstance().addInstr(new IRPutCh(value));
+                    IRBuilder.getInstance().addInstr(new IRPutCh(IRTypeCast.typeCast(value, IRBasicType.I32)));
                     i++;
                     continue;
                 }

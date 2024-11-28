@@ -39,8 +39,7 @@ public class ExpNode extends ASTNode {
             b.append("  ".repeat(depth)).append("<Exp>\n").append(addExp);
             return b.toString();
         }
-        b.append(addExp);
-        b.append("<Exp>\n");
+        b.append(addExp).append("<Exp>\n");
         return b.toString();
     }
 }

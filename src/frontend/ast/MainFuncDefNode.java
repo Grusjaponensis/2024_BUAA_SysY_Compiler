@@ -38,7 +38,9 @@ public class MainFuncDefNode extends ASTNode {
     public void analyzeSemantic(SymbolTable table) {
         symbolTable = new SymbolTable(table);
         table.insertChildTable(symbolTable);
+        symbolTable.setInFuncDef(ValueType.Int);
         body.analyzeSemantic(symbolTable);
+        symbolTable.setInFuncDef(null);
         body.checkReturnStmt(ValueType.Int, endLineNum);
     }
 

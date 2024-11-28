@@ -29,6 +29,7 @@ public class LValNode extends ASTNode {
     private Ident identifier;
     private ExpNode expNode;
     private int lineNum;
+    private Symbol symbol;
 
     public LValNode(TokenList tokens, int depth) {
         super(tokens, depth);
@@ -50,6 +51,22 @@ public class LValNode extends ASTNode {
         }
     }
 
+    /**
+     * Binds the current symbol to this lVal during semantic analysis to prevent outdated symbol table lookups
+     * due to symbol redefinition in the current scope.
+     * <p>
+     * For example:
+     * <pre>
+     * {@code
+     * int a[3] = {1, 2, 3};
+     * int main() {
+     *     printf("%d", a[0]);  // Correct usage of 'a' is the array defined above.
+     *     char a = 'a';        // Redefinition of 'a' causes symbol overwrite in table
+     *     return 0;
+     * }}
+     * </pre>
+     * </p>
+     */
     public boolean analyzeSemantic(SymbolTable table) {
         // check before use
         if (!table.hasSymbol(identifier.name())) {
@@ -71,6 +88,7 @@ public class LValNode extends ASTNode {
             expNode.analyzeSemantic(table);
             table.exitLValBracket();
         }
+        this.symbol = table.find(identifier.name());
         return true;
     }
 
@@ -100,14 +118,14 @@ public class LValNode extends ASTNode {
     }
 
     public IRValue generateIR(SymbolTable table, boolean isAssignment) {
-        Symbol symbol = table.find(identifier.name());
         if (expNode != null) {
             // fetch array item, so type of this symbol must be a pointer
             IRValue offset = expNode.generateIR(table);
             IRInstr elemPtr;
             IRType elemType = symbol.getIrValue().type();
             if (((IRPointerType) elemType).getObjectType() instanceof IRPointerType) {
-                // this symbol came from func param, so first load (dereference)
+                // this symbol came from func param, so first load (dereference from pointer of address)
+                // notice that this param has been inserted into symbol table
                 IRInstr loadFromPointer = new IRLoad(IRBuilder.getInstance().localReg(), symbol.getIrValue(), "load: " + symbol.getName());
                 IRBuilder.getInstance().addInstr(loadFromPointer);
                 assert loadFromPointer.type() instanceof IRPointerType;
@@ -144,16 +162,45 @@ public class LValNode extends ASTNode {
         return typeCheck(loadValue);
     }
 
+    /**
+     * There are two circumstances where an array identifier is directly used.
+     * <pre>
+     * {@code
+     * int foo(int array[]) {...}
+     * int bar(int array[]) {
+     *     foo(array); // First case: should use 'getelemptr i32*, ...'
+     * }
+     * // main omitted
+     * }
+     * </pre>
+     * <pre>
+     * {@code
+     * int a[3];
+     * int foo(int array[]) {...}
+     * int main() {
+     *     foo(a); // Second case: should use 'getelemptr [3 x i32], ...'
+     * }
+     * }
+     * </pre>
+     */
     private IRValue generateIRForArrayIdent(Var array) {
-        IRInstr elemPtr = new IRGetElemPtr(
-                array.getValueType().mapToIRType(),
-                IRBuilder.getInstance().localReg(),
-                array.getIrValue(),
-                new IRConstInt(IRBasicType.I32, 0),
-                "ptr: " + array.getName()
-        );
-        IRBuilder.getInstance().addInstr(elemPtr);
-        return elemPtr;
+        IRInstr instr;
+        if (((IRPointerType) array.getIrValue().type()).getObjectType() instanceof IRPointerType) {
+            // first
+            instr = new IRLoad(IRBuilder.getInstance().localReg(), array.getIrValue(), "load: " + array.getName());
+            IRBuilder.getInstance().addInstr(instr);
+        } else {
+            // second
+            instr = new IRGetElemPtr(
+                    array.getValueType().mapToIRType(),
+                    IRBuilder.getInstance().localReg(),
+                    array.getIrValue(),
+                    new IRConstInt(IRBasicType.I32, 0),
+                    "ptr: " + array.getName()
+            );
+            IRBuilder.getInstance().addInstr(instr);
+        }
+        return instr;
     }
 
     private IRValue typeCheck(IRValue load) {

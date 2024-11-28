@@ -99,6 +99,16 @@ public class StmtNode extends ASTNode {
 
     public Statement getStmt() { return stmt; }
 
+    public boolean isLastStmtReturn() {
+        if (stmt instanceof ReturnStmt) {
+            return true;
+        } else if (stmt instanceof BlockStmt block) {
+            BlockNode blockNode = block.getBlock();
+            return blockNode.getLastStmt() != null && blockNode.getLastStmt().getStmt() instanceof ReturnStmt;
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();

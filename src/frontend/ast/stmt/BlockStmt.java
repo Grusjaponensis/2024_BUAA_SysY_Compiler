@@ -34,6 +34,8 @@ public class BlockStmt extends ASTNode implements Statement {
         block.generateIR(symbolTable);
     }
 
+    public BlockNode getBlock() { return block; }
+
     @Override
     public String toString() {
         return String.valueOf(block);

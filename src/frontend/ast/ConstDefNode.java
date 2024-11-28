@@ -80,7 +80,7 @@ public class ConstDefNode extends ASTNode {
         IRType contentType = var.getValueType().mapToIRType();
         if (constExpNode != null) {
             // global const array
-            int arraySize = constExpNode.calculateConstVal(table);
+            int arraySize = constExpNode.evaluate(table);
             // init values set to all-0 manually
             ArrayList<Integer> initValues = new ArrayList<>(Collections.nCopies(arraySize, 0));
             // actual init values
@@ -117,7 +117,7 @@ public class ConstDefNode extends ASTNode {
         IRType contentType = var.getValueType().mapToIRType();
         if (constExpNode != null) {
             // local const array
-            int arraySize = constExpNode.calculateConstVal(table);
+            int arraySize = constExpNode.evaluate(table);
             ArrayList<Integer> initValues = new ArrayList<>(Collections.nCopies(arraySize, 0));
             ArrayList<Integer> partInitValues = constInitValNode.getInitValueArray(table);
             IntStream.range(0, partInitValues.size()).forEach(i -> initValues.set(i, partInitValues.get(i)));

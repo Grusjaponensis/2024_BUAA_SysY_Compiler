@@ -6,6 +6,8 @@ import exception.ErrorType;
 import frontend.ast.ASTNode;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.instr.IRJump;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -40,7 +42,9 @@ public class BreakStmt extends ASTNode implements Statement {
 
     @Override
     public void generateIR(SymbolTable table) {
-
+        IRBuilder.getInstance().addInstr(
+                new IRJump(IRBuilder.getInstance().getBreakForBlock(), "break")
+        );
     }
 
     @Override

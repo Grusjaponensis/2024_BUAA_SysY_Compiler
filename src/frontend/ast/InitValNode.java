@@ -91,6 +91,8 @@ public class InitValNode extends ASTNode {
         for (char c : strConst.value().toCharArray()) {
             irValues.add(new IRConstInt(IRBasicType.I8, c));
         }
+        // append '\0' to initVals
+        irValues.add(new IRConstInt(IRBasicType.I8, 0));
         return irValues;
     }
 

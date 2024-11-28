@@ -5,6 +5,12 @@ import exception.ErrorCollector;
 import exception.ErrorType;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.instr.IRStore;
+import ir.instr.IRTypeCast;
+import ir.type.IRPointerType;
+import symbol.Symbol;
 import symbol.SymbolTable;
 import symbol.Var;
 import util.Debug;
@@ -39,6 +45,26 @@ public class ForStmtNode extends ASTNode {
             }
         }
         exp.analyzeSemantic(table);
+    }
+
+    public void generateIR(SymbolTable table) {
+        // probably as same as 'LVal Assignment Node'
+        Symbol symbol = table.find(lVal.getName());
+        // the allocated ptr
+        IRValue ptr = symbol.getIrValue();
+        IRValue value;
+        if (lVal.isArrayCall()) {
+            // update ptr to use elemPtr
+            ptr = lVal.generateIR(table, true);
+        }
+        value = this.exp.generateIR(table);
+        //.type check
+        if (value.type() != ((IRPointerType) ptr.type()).getObjectType()) {
+            value = IRTypeCast.typeCast(value, ptr);
+        }
+        IRBuilder.getInstance().addInstr(
+                new IRStore(value, ptr, "store: " + value.name() + " -> " + symbol.getName())
+        );
     }
 
     @Override

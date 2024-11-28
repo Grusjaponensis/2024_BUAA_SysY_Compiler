@@ -2,6 +2,13 @@ package frontend.ast;
 
 import frontend.token.TokenList;
 import frontend.token.TokenType;
+import ir.IRBuilder;
+import ir.IRValue;
+import ir.instr.IRIcmp;
+import ir.instr.IRInstr;
+import ir.instr.IRInstrType;
+import ir.instr.IRTypeCast;
+import ir.type.IRBasicType;
 import symbol.SymbolTable;
 import util.Debug;
 
@@ -42,6 +49,39 @@ public class RelExpNode extends ASTNode {
 
     public void analyzeSemantic(SymbolTable table) {
         addExpNodes.forEach(exp -> exp.analyzeSemantic(table));
+    }
+
+    public IRValue generateIR(SymbolTable table) {
+        IRValue u = addExpNodes.get(0).generateIR(table);
+        IRValue v;
+        for (int i = 1; i < addExpNodes.size(); i++) {
+            TokenType op = operators.get(i);
+            IRInstrType instrType = op == TokenType.GTOperator ? IRInstrType.Sgt :
+                                    op == TokenType.GEOperator ? IRInstrType.Sge :
+                                    op == TokenType.LTOperator ? IRInstrType.Slt :
+                                    IRInstrType.Sle;
+            v = addExpNodes.get(i).generateIR(table);
+            // Notice to type check before use
+            IRInstr icmp = new IRIcmp(
+                    IRBuilder.getInstance().localReg(),
+                    instrType,
+                    IRTypeCast.typeCast(u, IRBasicType.I32), IRTypeCast.typeCast(v, IRBasicType.I32),
+                    String.format("icmp: %s %s %s", u.name(), opMapToString(op), v.name())
+            );
+            u = icmp;
+            IRBuilder.getInstance().addInstr(icmp);
+        }
+        return u;
+    }
+
+    private String opMapToString(TokenType op) {
+        return switch (op) {
+            case GTOperator -> ">";
+            case GEOperator -> ">=";
+            case LTOperator -> "<";
+            case LEOperator -> "<=";
+            default -> "";
+        };
     }
 
     @Override
