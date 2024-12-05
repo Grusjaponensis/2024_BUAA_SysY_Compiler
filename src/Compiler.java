@@ -1,3 +1,4 @@
+import backend.MIPSBuilder;
 import exception.CompileError;
 import exception.ErrorCollector;
 import frontend.Lexer;
@@ -62,6 +63,7 @@ public class Compiler {
             return;
         }
 
+        // generate IR
         compUnit.generateIR();
 
         Debug.log("\n\n" + Debug.TERM_RED + ">>>>>>>> LLVM IR: >>>>>>>>" + Debug.TERM_RESET + "\n");
@@ -70,6 +72,11 @@ public class Compiler {
 
         Path irFile = Paths.get("llvm_ir.txt");
         Files.writeString(irFile, IRBuilder.getInstance().generateIR(false));
+
+        // generate Object code
+        IRBuilder.getInstance().generateObjectCode();
+        Debug.log(Debug.TERM_RED + ">>>>>>>> Object Code: >>>>>>>>" + Debug.TERM_RESET);
+        System.out.println(MIPSBuilder.getInstance().generateObjectCode());
 
         Debug.log(Debug.TERM_RED + ">>>>>>>> Program exit... >>>>>>>>" + Debug.TERM_RESET);
     }

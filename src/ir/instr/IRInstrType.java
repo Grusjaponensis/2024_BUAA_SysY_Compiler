@@ -19,7 +19,7 @@ public enum IRInstrType {
     Call, Ret,
 
     // I/O
-    GetInt, GetChar, PutInt, PutCh,
+    GetInt, GetChar, PutInt, PutCh, PutStr,
 
     // type cast
     Zext, Trunc,

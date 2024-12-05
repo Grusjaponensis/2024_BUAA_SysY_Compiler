@@ -10,7 +10,6 @@ import java.util.ArrayList;
 public class IRModule extends IRValue {
     private final ArrayList<IRGlobal> globalDefinitions = new ArrayList<>();
     private final ArrayList<IRFunc> funcDefinitions = new ArrayList<>();
-    private final ArrayList<IRString> strings = new ArrayList<>();
 
     public IRModule(String name) {
         super(IRBasicType.Module, name);
@@ -22,10 +21,6 @@ public class IRModule extends IRValue {
 
     public void addFunc(IRFunc func) {
         funcDefinitions.add(func);
-    }
-
-    public void addString(IRString string) {
-        strings.add(string);
     }
 
     public String generateIR(boolean forPrint) {
@@ -47,12 +42,17 @@ public class IRModule extends IRValue {
         return b.toString();
     }
 
+    public void generateObjectCode() {
+        globalDefinitions.forEach(IRGlobal::generateObjectCode);
+    }
+
 
     private static final String lib = """
             declare i32 @getchar()
             declare i32 @getint()
             declare void @putint(i32)
             declare void @putch(i32)
+            declare void @putstr(i8*)
             """;
 
     private static final String moduleInfo = "; ModuleID = " ;

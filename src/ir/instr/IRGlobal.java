@@ -1,9 +1,17 @@
 package ir.instr;
 
+import backend.instr.MIPSAscii;
+import backend.instr.MIPSByte;
+import backend.instr.MIPSWord;
+import frontend.token.StringLiteral;
 import ir.constant.IRConst;
+import ir.constant.IRConstArray;
 import ir.constant.IRConstInt;
+import ir.type.IRBasicType;
 import ir.type.IRPointerType;
 import ir.type.IRType;
+
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -42,6 +50,34 @@ public class IRGlobal extends IRInstr {
         this.isConst = isConst;
         this.objectType = type;
         this.initVal = initVal;
+    }
+
+    public void generateObjectCode() {
+        if (initVal instanceof IRConstInt constInt) {
+            if (constInt.type() == IRBasicType.I32) {
+                // aka. int
+                new MIPSWord(name().substring(1), constInt.getValue(), "no message to display");
+            } else {
+                // aka. char
+                new MIPSByte(name().substring(1), constInt.getValue(), "no message to display");
+            }
+        } else {
+            IRConstArray array = (IRConstArray) initVal;
+            assert array.getElemType() == IRBasicType.I32 || array.getElemType() == IRBasicType.I8;
+            if (array.getElemType() == IRBasicType.I32) {
+                // int array
+                new MIPSWord(name().substring(1), array.getInitVals(), "no message to display");
+            } else {
+                // char array
+                new MIPSAscii(
+                        name.substring(1),
+                        array.getInitVals().stream()
+                                .map(i -> StringLiteral.display(Character.toString(i)))
+                                .collect(Collectors.joining()),
+                        "no message to display"
+                );
+            }
+        }
     }
 
     /**

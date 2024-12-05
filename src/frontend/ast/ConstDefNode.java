@@ -94,7 +94,7 @@ public class ConstDefNode extends ASTNode {
             globalVar = new IRGlobal(
                     new IRArrayType(arraySize, contentType),
                     var.getName(), true,
-                    new IRConstArray(contentType, initValues)
+                    new IRConstArray(contentType, initValues, contentType)
             );
         } else {
             // single const
@@ -107,7 +107,6 @@ public class ConstDefNode extends ASTNode {
         }
         symbol.setIrValue(globalVar);
         IRBuilder.getInstance().addGlobalVar(globalVar);
-        Debug.log("[Add global constant]:\n" + globalVar);
     }
 
     private void generateLocalConst(SymbolTable table) {

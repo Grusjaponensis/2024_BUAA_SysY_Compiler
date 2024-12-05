@@ -32,6 +32,6 @@ public enum Reg {
 
     @Override
     public String toString() {
-        return String.format("$%s", this);
+        return "$" + this.name();
     }
 }

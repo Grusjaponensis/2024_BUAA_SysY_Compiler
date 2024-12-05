@@ -6,19 +6,23 @@ import exception.ErrorType;
 import frontend.ast.ASTNode;
 import frontend.ast.ExpNode;
 import frontend.ast.StringConst;
+import frontend.token.StringLiteral;
 import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
 import ir.IRBuilder;
 import ir.IRValue;
-import ir.instr.IRPutCh;
-import ir.instr.IRPutInt;
-import ir.instr.IRTypeCast;
+import ir.constant.IRConstArray;
+import ir.constant.IRConstInt;
+import ir.constant.IRString;
+import ir.instr.*;
+import ir.type.IRArrayType;
 import ir.type.IRBasicType;
 import symbol.SymbolTable;
 import util.Debug;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * {@code PrintfStmt -> 'printf' '(' StringConst { ',' Exp } ')' ';'}
@@ -74,29 +78,40 @@ public class PrintfStmt extends ASTNode implements Statement {
 
     @Override
     public void generateIR(SymbolTable table) {
+        ArrayList<String> splitString = formattedString.separate();
+        // used for counting format args
         int index = 0;
-        String formatString = formattedString.value();
-        for (int i = 0; i < formatString.length(); i++) {
-            if (formatString.charAt(i) == '%') {
-                if (i + 1 >= formatString.length()) {
-                    IRBuilder.getInstance().addInstr(
-                            new IRPutCh('%')
-                    );
-                    break;
-                }
-                if (formatString.charAt(i + 1) == 'd') {
-                    IRValue value = params.get(index++).generateIR(table);
-                    IRBuilder.getInstance().addInstr(new IRPutInt(IRTypeCast.typeCast(value, IRBasicType.I32)));
-                    i++;
-                    continue;
-                } else if (formatString.charAt(i + 1) == 'c') {
-                    IRValue value = params.get(index++).generateIR(table);
-                    IRBuilder.getInstance().addInstr(new IRPutCh(IRTypeCast.typeCast(value, IRBasicType.I32)));
-                    i++;
-                    continue;
-                }
+        for (String arg : splitString) {
+            if (arg.equals("%d")) {
+                IRValue value = params.get(index++).generateIR(table);
+                IRBuilder.getInstance().addInstr(new IRPutInt(IRTypeCast.typeCast(value, IRBasicType.I32)));
+            } else if (arg.equals("%c")) {
+                IRValue value = params.get(index++).generateIR(table);
+                IRBuilder.getInstance().addInstr(new IRPutCh(IRTypeCast.typeCast(value, IRBasicType.I32)));
+            } else {
+                ArrayList<Integer> initVals = arg.chars().boxed().collect(Collectors.toCollection(ArrayList::new));
+                // add trailing '\0' to end the string
+                initVals.add(0);
+                IRGlobal str = new IRGlobal(
+                        new IRArrayType(arg.length() + 1, IRBasicType.I8),
+                        IRBuilder.getInstance().stringReg(), // e.g., .str_1 / .str_2 / ...
+                        true,
+                        new IRConstArray(IRBasicType.I8, initVals, IRBasicType.I8)
+                );
+                IRBuilder.getInstance().addGlobalVar(str);
+                IRInstr getElemPtr = new IRGetElemPtr(
+                        IRBasicType.I8,
+                        IRBuilder.getInstance().localReg(),
+                        str, new IRConstInt(IRBasicType.I32, 0), "ptr: " + str.name()
+                );
+                IRBuilder.getInstance().addInstr(getElemPtr);
+                IRBuilder.getInstance().addInstr(
+                        new IRPutStr(
+                                getElemPtr, new IRString(str.name().substring(1), initVals), // remove leading '@' character
+                                "value: \"" + StringLiteral.display(arg) + "\""
+                        )
+                );
             }
-            IRBuilder.getInstance().addInstr(new IRPutCh(formatString.charAt(i)));
         }
     }
 

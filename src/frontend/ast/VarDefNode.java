@@ -106,7 +106,7 @@ public class VarDefNode extends ASTNode {
             globalVar = new IRGlobal(
                     new IRArrayType(arraySize, contentType),
                     var.getName(), false,
-                    new IRConstArray(contentType, initVals)
+                    new IRConstArray(contentType, initVals, contentType)
             );
         } else {
             int initValue = 0;
@@ -121,7 +121,6 @@ public class VarDefNode extends ASTNode {
         }
         symbol.setIrValue(globalVar);
         IRBuilder.getInstance().addGlobalVar(globalVar);
-        Debug.log("[Add global variable]:\n" + globalVar);
     }
 
     private void generateLocalVar(SymbolTable table) {

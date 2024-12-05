@@ -14,35 +14,55 @@ public record StringConst(String value) {
                 .count();
     }
 
+    private void merge(char current, ArrayList<String> result) {
+        if (result.isEmpty() ||
+                (result.get(result.size() - 1).equals("%d") || result.get(result.size() - 1).equals("%c"))
+        ) {
+            result.add(String.valueOf(current));
+        } else {
+            result.set(result.size() - 1, result.get(result.size() - 1) + current);
+        }
+    }
+
+    /**
+     * Separates the input string into a list of format specifiers and non-format characters.
+     *
+     * <p>
+     * For example:
+     * </p>
+     *
+     * <pre>{@code
+     * String value = "Hello %d world %c\n";
+     * }</pre>
+     *
+     * <p>
+     * This method will separate the string into the following list:
+     * </p>
+     *
+     * <pre>{@code
+     * ["Hello ", "%d", " world ", "%c", "\n"]
+     * }</pre>
+     *
+     */
     public ArrayList<String> separate() {
         ArrayList<String> result = new ArrayList<>();
-        for (int i = 0; i < value.length(); i++) {
-            if (value.charAt(i) == '%' && i + 1 >= value.length()) {
+        int n = value.length();
+        for (int i = 0; i < n; i++) {
+            char current = value.charAt(i);
+            if (i + 1 >= n) {
                 // guard that will not out of bounds
-                if (result.isEmpty()) {
-                    result.add("%");
-                } else {
-                    result.set(result.size() - 1, result.get(result.size() - 1) + value.charAt(i));
-                }
+                merge(current, result);
                 break;
             }
 
-            if (!(value.charAt(i) == '%' && (value.charAt(i + 1) == 'd' || value.charAt(i + 1) == 'c'))) {
-                // not format param, can be combined into a new string
-                if (result.isEmpty()) {
-                    result.add(String.valueOf(value.charAt(i)));
-                } else {
-                    String original = result.get(result.size() - 1);
-                    result.set(result.size() - 1, original + value.charAt(i));
-                }
-            } else {
-                if (!result.isEmpty() && !result.get(result.size() - 1).isEmpty()) {
-                    result.add("");
-                }
+            if (current == '%' && (value.charAt(i + 1) == 'd' || value.charAt(i + 1) == 'c')) {
+                result.add("%" + value.charAt(i + 1));
+                // skip next format char
                 i++;
+            } else {
+                merge(current, result);
             }
         }
-        result.removeIf(String::isEmpty);
         return result;
     }
 

@@ -11,6 +11,7 @@ import java.util.Stack;
 public class IRBuilder {
     private final static IRBuilder instance = new IRBuilder();
     private int localCounter = 0;
+    private int globalStringCounter = 0;
     private int basicBlockCounter = 0;
 
     private final IRModule irModule = new IRModule("testfile");
@@ -29,6 +30,8 @@ public class IRBuilder {
 
     /// {@code localCounter} will auto increase.
     public String localReg() { return "%v" + localCounter++; }
+
+    public String stringReg() { return ".str_" + globalStringCounter++; }
 
     public String blockReg() { return "bb_" + basicBlockCounter++; }
 
@@ -76,4 +79,6 @@ public class IRBuilder {
     public String generateIR(boolean forPrint) {
         return irModule.generateIR(forPrint);
     }
+
+    public void generateObjectCode() { irModule.generateObjectCode(); }
 }

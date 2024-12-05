@@ -182,6 +182,7 @@ public class LValNode extends ASTNode {
      * }
      * }
      * </pre>
+     * Well, to some extent, {@code [8 * i8]} is the same as {@code i8*} ...
      */
     private IRValue generateIRForArrayIdent(Var array) {
         IRInstr instr;
