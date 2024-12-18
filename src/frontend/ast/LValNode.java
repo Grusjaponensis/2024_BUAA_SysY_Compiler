@@ -123,22 +123,17 @@ public class LValNode extends ASTNode {
             IRValue offset = expNode.generateIR(table);
             IRInstr elemPtr;
             IRType elemType = symbol.getIrValue().type();
-            if (((IRPointerType) elemType).getObjectType() instanceof IRPointerType) {
-                // this symbol came from func param, so first load (dereference from pointer of address)
-                // notice that this param has been inserted into symbol table
-                IRInstr loadFromPointer = new IRLoad(IRBuilder.getInstance().localReg(), symbol.getIrValue(), "load: " + symbol.getName());
-                IRBuilder.getInstance().addInstr(loadFromPointer);
-                assert loadFromPointer.type() instanceof IRPointerType;
-                elemPtr = new IRGetElemPtr(
-                        ((IRPointerType) loadFromPointer.type()).getObjectType(),
-                        IRBuilder.getInstance().localReg(), loadFromPointer, offset
-                );
-            } else {
+            if (((IRPointerType) elemType).getObjectType() instanceof IRArrayType arrayType) {
                 // array type
                 elemPtr = new IRGetElemPtr(
-                        ((IRArrayType) ((IRPointerType) elemType).getObjectType()).getElementType(),
-                        IRBuilder.getInstance().localReg(), symbol.getIrValue(), offset, "ptr: " + identifier.name() + "[" + offset.name() + "]"
+                        arrayType.getElementType(),
+                        IRBuilder.getInstance().localReg(),
+                        symbol.getIrValue(),
+                        offset, "ptr: " + identifier.name() + "[" + offset.name() + "]"
                 );
+            } else {
+                // pointer type
+                elemPtr = new IRGetElemPtr(((IRPointerType) elemType).getObjectType(), IRBuilder.getInstance().localReg(), symbol.getIrValue(), offset);
             }
             IRBuilder.getInstance().addInstr(elemPtr);
             if (isAssignment) {

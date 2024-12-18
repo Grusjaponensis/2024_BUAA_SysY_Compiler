@@ -1,6 +1,9 @@
 package ir.instr;
 
-import backend.instr.MIPSAscii;
+import backend.Reg;
+import backend.instr.MIPSLoadAddr;
+import backend.instr.MIPSLoadImm;
+import backend.instr.MIPSSyscall;
 import ir.IRValue;
 import ir.constant.IRString;
 import ir.type.IRBasicType;
@@ -23,6 +26,9 @@ public class IRPutStr extends IRInstr {
 
     public void generateObjectCode() {
         // note that IRString::name does not have a leading '@'!
+        new MIPSLoadAddr(Reg.a0, value.getName(), annotate());
+        new MIPSLoadImm(Reg.v0, 4, annotate());
+        new MIPSSyscall("putstr()");
     }
 
     @Override

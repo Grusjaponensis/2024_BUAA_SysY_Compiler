@@ -6,7 +6,6 @@ import ir.type.IRType;
 
 public abstract class IRInstr extends IRUser {
     protected final IRInstrType instrType;
-    protected IRBasicBlock block;
     public String message = "";
 
     /**
@@ -23,5 +22,11 @@ public abstract class IRInstr extends IRUser {
         super(valueType, name);
         this.instrType = instrType;
         this.message = message;
+    }
+
+    public void generateObjectCode() {}
+
+    public String annotate() {
+        return String.format("%s [%s]", this, this.message);
     }
 }

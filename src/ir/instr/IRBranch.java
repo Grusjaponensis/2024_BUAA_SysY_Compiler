@@ -1,5 +1,10 @@
 package ir.instr;
 
+import backend.MIPSBuilder;
+import backend.Reg;
+import backend.instr.MIPSBranch;
+import backend.instr.MIPSInstrType;
+import backend.instr.MIPSJump;
 import ir.IRBasicBlock;
 import ir.IRBuilder;
 import ir.IRValue;
@@ -29,10 +34,18 @@ public class IRBranch extends IRInstr {
     }
 
     @Override
+    public void generateObjectCode() {
+        Reg condition = MIPSBuilder.getInstance().prepareRegForOperand(this.condition, Reg.t8);
+        // if condition is false, branch to falseBlock; else jump to trueBlock unconditionally
+        new MIPSBranch(MIPSInstrType.Beq, condition, Reg.zero, destFalse.name(), annotate());
+        new MIPSJump(MIPSInstrType.J, destTrue.name(), annotate());
+    }
+
+    @Override
     public String toString() {
         return String.format(
-          "br i1 %s, label %%%s, label %%%s",
-          condition.name(), destTrue.name(), destFalse.name()
+                "br i1 %s, label %%%s, label %%%s",
+                condition.name(), destTrue.name(), destFalse.name()
         );
     }
 }

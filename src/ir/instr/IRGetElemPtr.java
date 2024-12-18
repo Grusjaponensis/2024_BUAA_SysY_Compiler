@@ -1,7 +1,13 @@
 package ir.instr;
 
+import backend.MIPSBuilder;
+import backend.Reg;
+import backend.instr.MIPSArithmetic;
+import backend.instr.MIPSInstrType;
+import backend.instr.MIPSMemory;
 import ir.IRValue;
 import ir.type.IRArrayType;
+import ir.type.IRBasicType;
 import ir.type.IRPointerType;
 import ir.type.IRType;
 
@@ -32,6 +38,43 @@ public class IRGetElemPtr extends IRInstr {
         super(new IRPointerType(valueType), name, IRInstrType.GetElemPtr, message);
         this.ptr = ptr;
         this.secondOffset = offsetSecond;
+    }
+
+    @Override
+    public void generateObjectCode() {
+        Reg dest = Reg.t8;
+        Reg pointer = MIPSBuilder.getInstance().prepareRegForPointer(ptr, Reg.t8);
+        Reg offset = MIPSBuilder.getInstance().prepareRegForOperand(secondOffset, Reg.t9);
+        IRPointerType pointerType = (IRPointerType) ptr.type();
+        int shift = getAddrShift(pointerType);
+        new MIPSArithmetic(MIPSInstrType.Sll, Reg.t9, offset, shift, "left shift for offset: " + offset);
+        new MIPSArithmetic(MIPSInstrType.Addu, dest, Reg.t9, pointer, annotate());
+        new MIPSMemory(
+                MIPSInstrType.Sw,
+                dest, Reg.sp,
+                MIPSBuilder.getInstance().stackPush(this, 4),
+                annotate()
+        );
+    }
+
+    private int getAddrShift(IRPointerType pointerType) {
+        int shift;
+        if (pointerType.getObjectType() instanceof IRArrayType arrayType) {
+            IRType elementType = arrayType.getElementType();
+            if (elementType == IRBasicType.I8) {
+                shift = 0;
+            } else {
+                shift = 2;
+            }
+        } else {
+            // instanceof pointerType
+            if (pointerType.getObjectType() == IRBasicType.I8) {
+                shift = 0;
+            } else {
+                shift = 2;
+            }
+        }
+        return shift;
     }
 
     /**

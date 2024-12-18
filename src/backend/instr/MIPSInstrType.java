@@ -2,10 +2,13 @@ package backend.instr;
 
 public enum MIPSInstrType {
     // arithmetic
-    Add, Addi, Sub, Mult, Div,
+    Add, Addu, Addi, Addiu, Sub, Mult, Div, Sll,
+
+    // HI / LO register
+    Mfhi, Mflo,
 
     // memory
-    Sw, Lw,
+    Sw, Lw, Sb, Lb,
 
     // syscall
     Syscall,

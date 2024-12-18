@@ -1,5 +1,10 @@
 package ir.instr;
 
+import backend.MIPSBuilder;
+import backend.Reg;
+import backend.instr.MIPSCmp;
+import backend.instr.MIPSInstrType;
+import backend.instr.MIPSMemory;
 import ir.IRValue;
 import ir.type.IRBasicType;
 
@@ -18,6 +23,34 @@ public class IRIcmp extends IRInstr {
         super(IRBasicType.I1, name, instrType, message);
         this.operand1 = operand1;
         this.operand2 = operand2;
+    }
+
+    private void generateComparisonOperations(Reg dest, Reg operand1, Reg operand2) {
+        MIPSInstrType type = switch (this.instrType) {
+            case Eq -> MIPSInstrType.Seq;
+            case Ne -> MIPSInstrType.Sne;
+            case Sle -> MIPSInstrType.Sle;
+            case Slt -> MIPSInstrType.Slt;
+            case Sge -> MIPSInstrType.Sge;
+            case Sgt -> MIPSInstrType.Sgt;
+            default -> throw new RuntimeException("Illegal cmp operator");
+        };
+        new MIPSCmp(type, dest, operand1, operand2, annotate());
+    }
+
+    @Override
+    public void generateObjectCode() {
+        Reg operand1 = MIPSBuilder.getInstance().prepareRegForOperand(this.operand1, Reg.t8);
+        Reg operand2 = MIPSBuilder.getInstance().prepareRegForOperand(this.operand2, Reg.t9);
+        Reg dest = Reg.t8;
+
+        generateComparisonOperations(dest, operand1, operand2);
+        new MIPSMemory(
+                MIPSInstrType.Sw,
+                dest, Reg.sp,
+                MIPSBuilder.getInstance().stackPush(this, 4),
+                annotate()
+        );
     }
 
     /**

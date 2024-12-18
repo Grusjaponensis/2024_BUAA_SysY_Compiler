@@ -13,6 +13,8 @@ package ir.type;
  * </ul>
  */
 public class IRBasicType extends IRType {
+    private static final int INT_SIZE = 4;
+
     public final static IRBasicType Module = new IRBasicType();
     public final static IRBasicType Function = new IRBasicType();
     public final static IRBasicType BasicBlock = new IRBasicType();
@@ -27,6 +29,14 @@ public class IRBasicType extends IRType {
     public final static IRBasicType Void = new IRBasicType();
 
     private IRBasicType() {}
+
+    @Override
+    public int objectSize() {
+        if (this == Module || this == Function || this == BasicBlock || this == Void) {
+            throw new UnsupportedOperationException("Illegal object size");
+        }
+        return INT_SIZE;
+    }
 
     @Override
     public String toString() {

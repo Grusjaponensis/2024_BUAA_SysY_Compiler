@@ -1,5 +1,9 @@
 package ir.instr;
 
+import backend.MIPSBuilder;
+import backend.Reg;
+import backend.instr.MIPSInstrType;
+import backend.instr.MIPSMemory;
 import ir.IRValue;
 import ir.type.IRBasicType;
 
@@ -18,6 +22,17 @@ public class IRStore extends IRInstr {
         super(IRBasicType.Void, "", IRInstrType.Store, message);
         this.src = src;
         this.dst = dst;
+    }
+
+    @Override
+    public void generateObjectCode() {
+        Reg src = MIPSBuilder.getInstance().prepareRegForOperand(this.src, Reg.t9);
+        Reg dst = MIPSBuilder.getInstance().prepareRegForPointer(this.dst, Reg.t8);
+        if (this.src.type() == IRBasicType.I8) {
+            new MIPSMemory(MIPSInstrType.Sb, src, dst, 0, annotate());
+        } else {
+            new MIPSMemory(MIPSInstrType.Sw, src, dst, 0, annotate());
+        }
     }
 
     /**

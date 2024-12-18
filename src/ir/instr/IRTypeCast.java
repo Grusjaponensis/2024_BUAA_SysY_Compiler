@@ -1,5 +1,9 @@
 package ir.instr;
 
+import backend.MIPSBuilder;
+import backend.Reg;
+import backend.instr.MIPSInstrType;
+import backend.instr.MIPSMemory;
 import ir.IRBuilder;
 import ir.IRValue;
 import ir.type.IRBasicType;
@@ -60,13 +64,38 @@ public class IRTypeCast extends IRInstr {
         }
     }
 
+    @Override
+    public void generateObjectCode() {
+        Reg src = MIPSBuilder.getInstance().prepareRegForOperand(this.objectToConvert, Reg.t9);
+        if (super.type == IRBasicType.I8) {
+            new MIPSMemory(
+                    MIPSInstrType.Sb,
+                    src, Reg.sp,
+                    MIPSBuilder.getInstance().stackPush(this, 4),
+                    annotate()
+            );
+        } else {
+            new MIPSMemory(
+                    MIPSInstrType.Sw,
+                    src, Reg.sp,
+                    MIPSBuilder.getInstance().stackPush(this, 4),
+                    annotate()
+            );
+        }
+    }
+
     /**
      * e.g. {@code %2 = trunc i32 %1 to i8}
      */
     @Override
     public String toString() {
-        return name + " = " + instrType.toString().toLowerCase()
-                + " " + objectToConvert.type() + " " + objectToConvert.name()
-                + " to " + super.type;
+        return String.format(
+                "%s = %s %s %s to %s",
+                name,
+                instrType.toString().toLowerCase(),
+                objectToConvert.type(),
+                objectToConvert.name(),
+                super.type
+        );
     }
 }

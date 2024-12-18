@@ -74,9 +74,12 @@ public class Compiler {
         Files.writeString(irFile, IRBuilder.getInstance().generateIR(false));
 
         // generate Object code
-        IRBuilder.getInstance().generateObjectCode();
-        Debug.log(Debug.TERM_RED + ">>>>>>>> Object Code: >>>>>>>>" + Debug.TERM_RESET);
-        System.out.println(MIPSBuilder.getInstance().generateObjectCode());
+        // IRBuilder.getInstance().generateObjectCode();
+        // Debug.log(Debug.TERM_RED + ">>>>>>>> Object Code: >>>>>>>>" + Debug.TERM_RESET);
+        // System.out.println(MIPSBuilder.getInstance().generateObjectCode());
+        //
+        // Path mipsFile = Paths.get("mips.txt");
+        // Files.writeString(mipsFile, MIPSBuilder.getInstance().generateObjectCode());
 
         Debug.log(Debug.TERM_RED + ">>>>>>>> Program exit... >>>>>>>>" + Debug.TERM_RESET);
     }

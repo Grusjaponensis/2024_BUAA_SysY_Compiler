@@ -1,5 +1,6 @@
 package ir;
 
+import backend.instr.MIPSLabel;
 import ir.instr.IRInstr;
 import ir.type.IRBasicType;
 import util.Debug;
@@ -9,16 +10,10 @@ import java.util.stream.Collectors;
 
 public class IRBasicBlock extends IRValue {
     private final ArrayList<IRInstr> instructions = new ArrayList<>();
-    private IRFunc belongsTo;
     private final ArrayList<IRBasicBlock> parent = new ArrayList<>();
 
     public IRBasicBlock(String name) {
         super(IRBasicType.BasicBlock, name);
-    }
-
-    public IRBasicBlock(String name, IRBasicBlock parent) {
-        super(IRBasicType.BasicBlock, name);
-        this.parent.add(parent);
     }
 
     public void addInstr(IRInstr instr) {
@@ -26,6 +21,11 @@ public class IRBasicBlock extends IRValue {
     }
 
     public void addParent(IRBasicBlock parent) { this.parent.add(parent); }
+
+    public void generateObjectCode() {
+        new MIPSLabel(super.name, "");
+        instructions.forEach(IRInstr::generateObjectCode);
+    }
 
     public String generateIR(boolean forPrint) {
         StringBuilder b = new StringBuilder();

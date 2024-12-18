@@ -26,8 +26,6 @@ public class IRBuilder {
 
     private void resetLocal() { this.localCounter = 0; }
 
-    private void resetBasicBlock() { this.basicBlockCounter = 0; }
-
     /// {@code localCounter} will auto increase.
     public String localReg() { return "%v" + localCounter++; }
 
@@ -56,7 +54,6 @@ public class IRBuilder {
 
     public void addFunc(IRFunc func) {
         resetLocal();
-        resetBasicBlock();
         irModule.addFunc(func);
         setCurrentFunc(func);
     }

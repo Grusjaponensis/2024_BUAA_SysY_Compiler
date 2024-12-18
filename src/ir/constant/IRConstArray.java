@@ -1,6 +1,5 @@
 package ir.constant;
 
-import ir.type.IRBasicType;
 import ir.type.IRType;
 
 import java.util.ArrayList;

@@ -21,4 +21,6 @@ public abstract class MIPSInstr implements Comparable<MIPSInstr> {
 
     @Override
     public int compareTo(MIPSInstr o) { return type.compareTo(o.type); }
+
+    public MIPSInstrType getType() { return type; }
 }

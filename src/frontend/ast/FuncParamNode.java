@@ -4,11 +4,10 @@ import frontend.token.Token;
 import frontend.token.TokenList;
 import frontend.token.TokenType;
 import ir.IRBuilder;
-import ir.IRValue;
 import ir.instr.IRAlloca;
 import ir.instr.IRInstr;
 import ir.instr.IRStore;
-import ir.type.IRPointerType;
+import ir.type.IRType;
 import symbol.SymbolTable;
 import symbol.Var;
 import util.Debug;
@@ -55,30 +54,16 @@ public class FuncParamNode extends ASTNode {
     }
 
     public void generateIR(SymbolTable table) {
-        IRInstr alloca;
-        IRValue origin;
-        if (isArray) {
-            // array in parameter represents as pointer:
-            // int f(int arr[]) -> i32* arr
-            // so in this example, result of alloca should be type of i32**
-            alloca = new IRAlloca(
-                    new IRPointerType(paramType.valueType().mapToIRType()),
-                    IRBuilder.getInstance().localReg(), "alloca: " + identifier.name()
-            );
-            // original v-reg of func parameter
-            origin = table.find(identifier.name()).getIrValue();
+        IRType type;
+        if (!isArray) {
+            type = this.paramType.valueType().mapToIRType();
+            IRInstr alloca = new IRAlloca(type, IRBuilder.getInstance().localReg());
             IRBuilder.getInstance().addInstr(alloca);
-            // set ir reference to this parameter
+            IRBuilder.getInstance().addInstr(new IRStore(table.find(identifier.name()).getIrValue(), alloca));
             table.find(identifier.name()).setIrValue(alloca);
-        } else {
-            alloca = new IRAlloca(paramType.valueType().mapToIRType(), IRBuilder.getInstance().localReg(), "alloca: " + identifier.name());
-            origin = table.find(identifier.name()).getIrValue();
-            table.find(identifier.name()).setIrValue(alloca);
-            IRBuilder.getInstance().addInstr(alloca);
         }
-        IRBuilder.getInstance().addInstr(
-                new IRStore(origin, alloca, "store: (param) " + origin.name() + " -> " + alloca.name())
-        );
+        // if this param is an array (e.g. int a[]), use the IRFuncParam directly
+        // so here we don't need any code
     }
 
     public BType getType() { return paramType; }

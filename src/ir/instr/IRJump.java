@@ -1,5 +1,7 @@
 package ir.instr;
 
+import backend.instr.MIPSInstrType;
+import backend.instr.MIPSJump;
 import ir.IRBasicBlock;
 import ir.IRBuilder;
 import ir.type.IRBasicType;
@@ -17,6 +19,11 @@ public class IRJump extends IRInstr {
         super(IRBasicType.Void, "", IRInstrType.Jump, message);
         this.dest = dest;
         dest.addParent(IRBuilder.getInstance().currentBlock());
+    }
+
+    @Override
+    public void generateObjectCode() {
+        new MIPSJump(MIPSInstrType.J, dest.name(), annotate());
     }
 
     @Override

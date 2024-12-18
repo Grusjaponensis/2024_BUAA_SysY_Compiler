@@ -1,6 +1,8 @@
 package ir;
 
-import ir.constant.IRString;
+import backend.instr.MIPSInstrType;
+import backend.instr.MIPSJump;
+import backend.instr.MIPSLabel;
 import ir.instr.IRGlobal;
 import ir.type.IRBasicType;
 import util.Debug;
@@ -44,6 +46,10 @@ public class IRModule extends IRValue {
 
     public void generateObjectCode() {
         globalDefinitions.forEach(IRGlobal::generateObjectCode);
+        new MIPSJump(MIPSInstrType.Jal, "main", "start program");
+        new MIPSJump(MIPSInstrType.J, "end", "end program");
+        funcDefinitions.forEach(IRFunc::generateObjectCode);
+        new MIPSLabel("end", "end program");
     }
 
 
