@@ -2,7 +2,7 @@ package backend.instr;
 
 public enum MIPSInstrType {
     // arithmetic
-    Add, Addu, Addi, Addiu, Sub, Mult, Div, Sll,
+    Addu, Addiu, Subu, Mult, Div, Sll,
 
     // HI / LO register
     Mfhi, Mflo,

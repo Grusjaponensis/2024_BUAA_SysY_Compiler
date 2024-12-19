@@ -70,7 +70,7 @@ public class IRCall extends IRInstr {
                 }
             }
         });
-        new MIPSArithmetic(MIPSInstrType.Addi, Reg.sp, Reg.sp, stackOffset, "Still Unknown");
+        new MIPSArithmetic(MIPSInstrType.Addiu, Reg.sp, Reg.sp, stackOffset, "");
         new MIPSJump(MIPSInstrType.Jal, funcName.substring(1), annotate());
 
         // In epilogue, restore $sp and $ra

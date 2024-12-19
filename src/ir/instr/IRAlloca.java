@@ -35,7 +35,7 @@ public class IRAlloca extends IRInstr {
     @Override
     public void generateObjectCode() {
         int addr = MIPSBuilder.getInstance().stackAllocation(objectType.objectSize());
-        new MIPSArithmetic(MIPSInstrType.Addi, Reg.t8, Reg.sp, addr, "alloca: " + objectType + ", size: " + objectType.objectSize());
+        new MIPSArithmetic(MIPSInstrType.Addiu, Reg.t8, Reg.sp, addr, "alloca: " + objectType + ", size: " + objectType.objectSize());
         new MIPSMemory(
                 MIPSInstrType.Sw,
                 Reg.t8, Reg.sp, // dest, base

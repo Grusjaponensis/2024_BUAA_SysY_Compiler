@@ -60,7 +60,7 @@ public class Compiler {
             Path errorFile = Paths.get("error.txt");
             Files.writeString(errorFile, ErrorCollector.getInstance().toString());
             System.out.println(Debug.TERM_RED + "errors: \n" + Debug.TERM_RESET + ErrorCollector.getInstance());
-            return;
+            // return;
         }
 
         // generate IR
@@ -74,12 +74,12 @@ public class Compiler {
         Files.writeString(irFile, IRBuilder.getInstance().generateIR(false));
 
         // generate Object code
-        // IRBuilder.getInstance().generateObjectCode();
-        // Debug.log(Debug.TERM_RED + ">>>>>>>> Object Code: >>>>>>>>" + Debug.TERM_RESET);
-        // System.out.println(MIPSBuilder.getInstance().generateObjectCode());
-        //
-        // Path mipsFile = Paths.get("mips.txt");
-        // Files.writeString(mipsFile, MIPSBuilder.getInstance().generateObjectCode());
+        IRBuilder.getInstance().generateObjectCode();
+        Debug.log(Debug.TERM_RED + ">>>>>>>> Object Code: >>>>>>>>" + Debug.TERM_RESET);
+        System.out.println(MIPSBuilder.getInstance().generateObjectCode());
+
+        Path mipsFile = Paths.get("mips.txt");
+        Files.writeString(mipsFile, MIPSBuilder.getInstance().generateObjectCode());
 
         Debug.log(Debug.TERM_RED + ">>>>>>>> Program exit... >>>>>>>>" + Debug.TERM_RESET);
     }

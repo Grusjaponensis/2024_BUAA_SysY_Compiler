@@ -41,8 +41,8 @@ public class IRArithmetic extends IRInstr {
 
     private void generateArithmeticOperations(Reg dest, Reg operand1, Reg operand2) {
         switch (this.instrType) {
-            case Add -> new MIPSArithmetic(MIPSInstrType.Add, dest, operand1, operand2, annotate());
-            case Sub -> new MIPSArithmetic(MIPSInstrType.Sub, dest, operand1, operand2, annotate());
+            case Add -> new MIPSArithmetic(MIPSInstrType.Addu, dest, operand1, operand2, annotate());
+            case Sub -> new MIPSArithmetic(MIPSInstrType.Subu, dest, operand1, operand2, annotate());
             case Mul -> {
                 new MIPSArithmetic(MIPSInstrType.Mult, operand1, operand2, annotate());
                 new MIPSMoveFrom(MIPSInstrType.Mflo, dest, String.format("result of mul: %s [%s]", this, this.message));

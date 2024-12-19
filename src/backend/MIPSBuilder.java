@@ -73,7 +73,7 @@ public class MIPSBuilder {
         if (stackOffset == null) {
             stackOffset = stackPush(operator, 4);
         }
-        new MIPSMemory(MIPSInstrType.Lw, register, Reg.sp, stackOffset, "lw: " + operator);
+        new MIPSMemory(MIPSInstrType.Lw, register, Reg.sp, stackOffset, operator.toString());
         return register;
     }
 
@@ -86,7 +86,7 @@ public class MIPSBuilder {
         if (stackOffset == null) {
             stackOffset = stackPush(pointer, 4);
         }
-        new MIPSMemory(MIPSInstrType.Lw, register, Reg.sp, stackOffset, "lw: " + pointer);
+        new MIPSMemory(MIPSInstrType.Lw, register, Reg.sp, stackOffset, pointer.toString());
         return register;
     }
 
