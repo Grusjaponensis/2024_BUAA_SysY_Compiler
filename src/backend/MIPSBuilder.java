@@ -104,7 +104,44 @@ public class MIPSBuilder {
 
     public int getStackPointerOffset() { return stackPointerOffset; }
 
-    public String generateObjectCode() {
+    private void peepHoleOptimize() {
+        ArrayList<MIPSInstr> instrToRemove = new ArrayList<>();
+        IntStream.range(0, textInstr.size() - 1).forEach(i -> {
+            MIPSInstr current = textInstr.get(i);
+            MIPSInstr next = textInstr.get(i + 1);
+            if (current.getType() == MIPSInstrType.Sw && next.getType() == MIPSInstrType.Lw) {
+                MIPSMemory currentMem = (MIPSMemory) current;
+                MIPSMemory nextMem = (MIPSMemory) next;
+                if (currentMem.getBaseAddr() == nextMem.getBaseAddr() &&
+                        currentMem.getOffset() == nextMem.getOffset() &&
+                        currentMem.getReg() == nextMem.getReg()
+                ) {
+                    instrToRemove.add(next);
+                }
+            } else if (current.getType() == MIPSInstrType.Lw && next.getType() == MIPSInstrType.Lw) {
+                MIPSMemory currentMem = (MIPSMemory) current;
+                MIPSMemory nextMem = (MIPSMemory) next;
+                if (currentMem.getBaseAddr() == nextMem.getBaseAddr() &&
+                        currentMem.getOffset() == nextMem.getOffset() &&
+                        currentMem.getReg() == nextMem.getReg()
+                ) {
+                    instrToRemove.add(next);
+                }
+            }
+
+            if (current.getType() == MIPSInstrType.J && next.getType() == MIPSInstrType.Label) {
+                assert current instanceof MIPSJump;
+                MIPSJump jump = (MIPSJump) current;
+                MIPSLabel label = (MIPSLabel) next;
+                if (jump.getLabel().equals(label.getLabel())) {
+                    instrToRemove.add(jump);
+                }
+            }
+        });
+        instrToRemove.forEach(textInstr::remove);
+    }
+
+    public String generateObjectCode(boolean optimizeState) {
         StringBuilder code = new StringBuilder();
         // for better readability, sort with the order "word > byte > ascii"
         Collections.sort(dataInstr);
@@ -119,6 +156,9 @@ public class MIPSBuilder {
             }
         });
         toRemove.forEach(textInstr::remove);
+        if (optimizeState) {
+            peepHoleOptimize();
+        }
 
         code.append("# ====================> text segment <====================\n").append(".text\n");
 

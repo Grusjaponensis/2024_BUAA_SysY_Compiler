@@ -34,6 +34,9 @@ public class IRBranch extends IRInstr {
     }
 
     @Override
+    public boolean use(IRValue value) { return false; }
+
+    @Override
     public void generateObjectCode() {
         Reg condition = MIPSBuilder.getInstance().prepareRegForOperand(this.condition, Reg.t8);
         // if condition is false, branch to falseBlock; else jump to trueBlock unconditionally

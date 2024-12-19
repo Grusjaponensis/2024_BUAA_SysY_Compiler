@@ -22,6 +22,7 @@ public class IRCall extends IRInstr {
         super(valueType, name, IRInstrType.Call);
         this.funcName = funcName;
         this.params = params;
+        this.uses.addAll(params);
     }
 
     public IRCall(IRType valueType, String name,
@@ -29,6 +30,7 @@ public class IRCall extends IRInstr {
         super(valueType, name, IRInstrType.Call, message);
         this.funcName = funcName;
         this.params = params;
+        this.uses.addAll(params);
     }
 
     @Override
@@ -80,6 +82,12 @@ public class IRCall extends IRInstr {
         mappedRegs.forEach(reg -> new MIPSMemory(MIPSInstrType.Lw, reg, Reg.sp, offsetMap.get(reg), "EPILOGUE: restore register"));
         // return value
         new MIPSMemory(MIPSInstrType.Sw, Reg.v0, Reg.sp, MIPSBuilder.getInstance().stackPush(this, 4), "sw: return value");
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        this.params.replaceAll(param -> param == value ? newValue : param);
+        this.uses.replaceAll(u -> u == value ? newValue : u);
     }
 
     /**

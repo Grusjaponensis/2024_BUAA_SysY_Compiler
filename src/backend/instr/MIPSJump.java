@@ -25,6 +25,8 @@ public class MIPSJump extends MIPSInstr {
         isJr = true;
     }
 
+    public String getLabel() { return label; }
+
     @Override
     public String toString() {
         return String.format("%-6s %s", super.type, isJr ? returnAddr : label);

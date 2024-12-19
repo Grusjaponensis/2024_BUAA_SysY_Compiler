@@ -8,20 +8,24 @@ import ir.IRValue;
 import ir.type.IRBasicType;
 
 public class IRStore extends IRInstr {
-    private final IRValue src;
-    private final IRValue dst;
+    private IRValue src;
+    private IRValue dst;
 
     public IRStore(IRValue src, IRValue dst) {
         // store don't have a name because it doesn't have a return value
         super(IRBasicType.Void, "", IRInstrType.Store);
         this.src = src;
         this.dst = dst;
+        this.uses.add(src);
+        this.uses.add(dst);
     }
 
     public IRStore(IRValue src, IRValue dst, String message) {
         super(IRBasicType.Void, "", IRInstrType.Store, message);
         this.src = src;
         this.dst = dst;
+        this.uses.add(src);
+        this.uses.add(dst);
     }
 
     @Override
@@ -33,6 +37,17 @@ public class IRStore extends IRInstr {
         } else {
             new MIPSMemory(MIPSInstrType.Sw, src, dst, 0, annotate());
         }
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.src == value) {
+            this.src = newValue;
+        }
+        if (this.dst == value) {
+            this.dst = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     /**

@@ -8,6 +8,8 @@ public class MIPSLabel extends MIPSInstr {
         this.name = name;
     }
 
+    public String getLabel() { return name; }
+
     @Override
     public String toString() {
         return name + ": ";

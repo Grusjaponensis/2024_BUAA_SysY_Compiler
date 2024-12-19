@@ -12,8 +12,8 @@ import ir.type.IRPointerType;
 import ir.type.IRType;
 
 public class IRGetElemPtr extends IRInstr {
-    private final IRValue ptr;
-    private final IRValue secondOffset;
+    private IRValue ptr;
+    private IRValue secondOffset;
 
     /**
      * @param valueType type of the content
@@ -25,6 +25,8 @@ public class IRGetElemPtr extends IRInstr {
         super(new IRPointerType(valueType), name, IRInstrType.GetElemPtr);
         this.ptr = ptr;
         this.secondOffset = offsetSecond;
+        this.uses.add(ptr);
+        this.uses.add(offsetSecond);
     }
 
     /**
@@ -38,6 +40,8 @@ public class IRGetElemPtr extends IRInstr {
         super(new IRPointerType(valueType), name, IRInstrType.GetElemPtr, message);
         this.ptr = ptr;
         this.secondOffset = offsetSecond;
+        this.uses.add(ptr);
+        this.uses.add(offsetSecond);
     }
 
     @Override
@@ -75,6 +79,17 @@ public class IRGetElemPtr extends IRInstr {
             }
         }
         return shift;
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (ptr.equals(value)) {
+            ptr = newValue;
+        }
+        if (secondOffset.equals(value)) {
+            secondOffset = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     /**

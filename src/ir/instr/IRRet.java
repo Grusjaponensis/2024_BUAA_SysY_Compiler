@@ -10,16 +10,18 @@ import ir.type.IRBasicType;
 import ir.type.IRType;
 
 public class IRRet extends IRInstr {
-    private final IRValue returnValue;
+    private IRValue returnValue;
 
     public IRRet(IRType valueType, IRValue returnValue) {
         super(valueType, "", IRInstrType.Ret);
         this.returnValue = returnValue;
+        this.uses.add(returnValue);
     }
 
     public IRRet(IRType valueType, IRValue returnValue, String message) {
         super(valueType, "", IRInstrType.Ret, message);
         this.returnValue = returnValue;
+        this.uses.add(returnValue);
     }
 
     @Override
@@ -31,6 +33,14 @@ public class IRRet extends IRInstr {
             }
         }
         new MIPSJump(MIPSInstrType.Jr, Reg.ra, annotate());
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.returnValue == value) {
+            this.returnValue = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     @Override

@@ -39,11 +39,14 @@ public class IRFunc extends IRValue {
     public void generateObjectCode() {
         new MIPSLabel(super.name.substring(1), " ======> " + super.name + " <====== ");
         MIPSBuilder.getInstance().functionPrologue(regMap);
-        IntStream.range(0, params.size()).forEach(i -> {
-            // regMap.put(params.get(i), Reg.values()[3 + i]);
-            MIPSBuilder.getInstance().stackPush(params.get(i), 4);
-        });
+        IntStream.range(0, params.size()).forEach(
+                i -> MIPSBuilder.getInstance().stackPush(params.get(i), 4)
+        );
         basicBlocks.forEach(IRBasicBlock::generateObjectCode);
+    }
+
+    public void constantFolding() {
+        basicBlocks.forEach(IRBasicBlock::constantFolding);
     }
 
     public String generateIR(boolean forPrint) {

@@ -24,6 +24,7 @@ public class IRPutStr extends IRInstr {
         this.value = value;
     }
 
+    @Override
     public void generateObjectCode() {
         // note that IRString::name does not have a leading '@'!
         new MIPSLoadAddr(Reg.a0, value.getName(), annotate());

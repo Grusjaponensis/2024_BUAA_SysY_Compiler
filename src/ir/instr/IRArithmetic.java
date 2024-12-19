@@ -16,8 +16,8 @@ import ir.type.IRBasicType;
  * </p>
  */
 public class IRArithmetic extends IRInstr {
-    private final IRValue operand1;
-    private final IRValue operand2;
+    private IRValue operand1;
+    private IRValue operand2;
 
     /**
      * In each arithmetic operation, return value is always {@code i32}
@@ -27,6 +27,8 @@ public class IRArithmetic extends IRInstr {
         super(IRBasicType.I32, name, instrType);
         this.operand1 = operand1;
         this.operand2 = operand2;
+        this.uses.add(operand1);
+        this.uses.add(operand2);
     }
 
     /**
@@ -37,6 +39,8 @@ public class IRArithmetic extends IRInstr {
         super(IRBasicType.I32, name, instrType, message);
         this.operand1 = operand1;
         this.operand2 = operand2;
+        this.uses.add(operand1);
+        this.uses.add(operand2);
     }
 
     private void generateArithmeticOperations(Reg dest, Reg operand1, Reg operand2) {
@@ -52,7 +56,7 @@ public class IRArithmetic extends IRInstr {
                 new MIPSMoveFrom(MIPSInstrType.Mflo, dest, String.format("result of sdiv: %s [%s]", this, this.message));
             }
             case SRem -> {
-                new MIPSArithmetic(MIPSInstrType.Div, operand1, operand2, "srem: " + this);
+                new MIPSArithmetic(MIPSInstrType.Div, operand1, operand2, annotate());
                 new MIPSMoveFrom(MIPSInstrType.Mfhi, dest, String.format("result of srem: %s [%s]", this, this.message));
             }
             default -> throw new RuntimeException("Invalid arithmetic operation");
@@ -74,6 +78,21 @@ public class IRArithmetic extends IRInstr {
                 MIPSBuilder.getInstance().stackPush(this, 4),
                 annotate()
         );
+    }
+
+    public IRValue getOperand1() { return operand1; }
+
+    public IRValue getOperand2() { return operand2; }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.operand1 == value) {
+            this.operand1 = newValue;
+        }
+        if (this.operand2 == value) {
+            this.operand2 = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     /**

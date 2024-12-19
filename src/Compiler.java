@@ -70,16 +70,24 @@ public class Compiler {
 
         System.out.println(IRBuilder.getInstance().generateIR(true));
 
+        // IR without optimization
         Path irFile = Paths.get("llvm_ir.txt");
         Files.writeString(irFile, IRBuilder.getInstance().generateIR(false));
+
+        if (Debug.STAGE_OPTIMIZATION) {
+            // IR with optimization
+            IRBuilder.getInstance().optimize();
+            Path optimizedIRFile = Paths.get("llvm_ir_after_optimization.txt");
+            Files.writeString(optimizedIRFile, IRBuilder.getInstance().generateIR(false));
+        }
 
         // generate Object code
         IRBuilder.getInstance().generateObjectCode();
         Debug.log(Debug.TERM_RED + ">>>>>>>> Object Code: >>>>>>>>" + Debug.TERM_RESET);
-        System.out.println(MIPSBuilder.getInstance().generateObjectCode());
+        System.out.println(MIPSBuilder.getInstance().generateObjectCode(false));
 
         Path mipsFile = Paths.get("mips.txt");
-        Files.writeString(mipsFile, MIPSBuilder.getInstance().generateObjectCode());
+        Files.writeString(mipsFile, MIPSBuilder.getInstance().generateObjectCode(Debug.STAGE_OPTIMIZATION));
 
         Debug.log(Debug.TERM_RED + ">>>>>>>> Program exit... >>>>>>>>" + Debug.TERM_RESET);
     }

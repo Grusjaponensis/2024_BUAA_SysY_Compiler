@@ -4,6 +4,7 @@ import backend.instr.MIPSInstrType;
 import backend.instr.MIPSJump;
 import ir.IRBasicBlock;
 import ir.IRBuilder;
+import ir.IRValue;
 import ir.type.IRBasicType;
 
 public class IRJump extends IRInstr {
@@ -20,6 +21,9 @@ public class IRJump extends IRInstr {
         this.dest = dest;
         dest.addParent(IRBuilder.getInstance().currentBlock());
     }
+
+    @Override
+    public boolean use(IRValue value) { return false; }
 
     @Override
     public void generateObjectCode() {

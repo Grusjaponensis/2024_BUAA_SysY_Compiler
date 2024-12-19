@@ -15,11 +15,13 @@ public class IRPutCh extends IRInstr {
     public IRPutCh(char c) {
         super(IRBasicType.Void, "", IRInstrType.PutCh);
         this.c = c;
+        this.uses.add(value);
     }
 
     public IRPutCh(IRValue value) {
         super(IRBasicType.Void, "", IRInstrType.PutCh);
         this.value = value;
+        this.uses.add(value);
     }
 
     @Override
@@ -34,6 +36,14 @@ public class IRPutCh extends IRInstr {
             new MIPSMove(Reg.a0, regForIRValue, annotate());
         }
         new MIPSSyscall("putch()");
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.value == value) {
+            this.value = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     @Override

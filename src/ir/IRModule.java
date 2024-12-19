@@ -52,6 +52,7 @@ public class IRModule extends IRValue {
         new MIPSLabel("end", "end program");
     }
 
+    public void optimize() { funcDefinitions.forEach(IRFunc::constantFolding); }
 
     private static final String lib = """
             declare i32 @getchar()

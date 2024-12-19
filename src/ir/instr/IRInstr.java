@@ -1,7 +1,7 @@
 package ir.instr;
 
-import ir.IRBasicBlock;
 import ir.IRUser;
+import ir.IRValue;
 import ir.type.IRType;
 
 public abstract class IRInstr extends IRUser {
@@ -24,9 +24,15 @@ public abstract class IRInstr extends IRUser {
         this.message = message;
     }
 
+    public IRInstrType getInstrType() { return this.instrType; }
+
     public void generateObjectCode() {}
 
     public String annotate() {
         return String.format("%s [%s]", this, this.message);
     }
+
+    public boolean use(IRValue value) { return this.uses.contains(value); }
+
+    public void replaceUse(IRValue value, IRValue newValue) {}
 }

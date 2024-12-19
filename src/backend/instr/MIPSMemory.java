@@ -14,6 +14,12 @@ public class MIPSMemory extends MIPSInstr {
         this.offset = offset;
     }
 
+    public Reg getReg() { return reg; }
+
+    public int getOffset() { return offset; }
+
+    public Reg getBaseAddr() { return baseAddr; }
+
     @Override
     public String toString() {
         return String.format("%-6s %s, %s(%s)", type, reg, offset, baseAddr);

@@ -9,13 +9,15 @@ import ir.IRValue;
 import ir.type.IRBasicType;
 
 public class IRIcmp extends IRInstr {
-    private final IRValue operand1;
-    private final IRValue operand2;
+    private IRValue operand1;
+    private IRValue operand2;
 
     public IRIcmp(String name, IRInstrType instrType, IRValue operand1, IRValue operand2) {
         super(IRBasicType.I1, name, instrType);
         this.operand1 = operand1;
         this.operand2 = operand2;
+        this.uses.add(operand1);
+        this.uses.add(operand2);
     }
 
     public IRIcmp(String name, IRInstrType instrType,
@@ -23,6 +25,8 @@ public class IRIcmp extends IRInstr {
         super(IRBasicType.I1, name, instrType, message);
         this.operand1 = operand1;
         this.operand2 = operand2;
+        this.uses.add(operand1);
+        this.uses.add(operand2);
     }
 
     private void generateComparisonOperations(Reg dest, Reg operand1, Reg operand2) {
@@ -51,6 +55,17 @@ public class IRIcmp extends IRInstr {
                 MIPSBuilder.getInstance().stackPush(this, 4),
                 annotate()
         );
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.operand1 == value) {
+            this.operand1 = newValue;
+        }
+        if (this.operand2 == value) {
+            this.operand2 = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     /**

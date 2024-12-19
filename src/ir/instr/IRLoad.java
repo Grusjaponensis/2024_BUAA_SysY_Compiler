@@ -9,17 +9,19 @@ import ir.type.IRBasicType;
 import ir.type.IRPointerType;
 
 public class IRLoad extends IRInstr {
-    private final IRValue loadFrom;
+    private IRValue loadFrom;
 
     public IRLoad(String name, IRValue loadFrom) {
         // auto dereference
         super(((IRPointerType) loadFrom.type()).getObjectType(), name, IRInstrType.Load);
         this.loadFrom = loadFrom;
+        this.uses.add(loadFrom);
     }
 
     public IRLoad(String name, IRValue loadFrom, String message) {
         super(((IRPointerType) loadFrom.type()).getObjectType(), name, IRInstrType.Load, message);
         this.loadFrom = loadFrom;
+        this.uses.add(loadFrom);
     }
 
     @Override
@@ -41,6 +43,14 @@ public class IRLoad extends IRInstr {
                 MIPSBuilder.getInstance().stackPush(this, 4),
                 annotate()
         );
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.loadFrom == value) {
+            this.loadFrom = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     @Override

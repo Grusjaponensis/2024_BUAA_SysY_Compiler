@@ -11,18 +11,20 @@ import ir.type.IRPointerType;
 import ir.type.IRType;
 
 public class IRTypeCast extends IRInstr {
-    private final IRValue objectToConvert;
+    private IRValue objectToConvert;
     // target type: super.type
 
     public IRTypeCast(String name, IRInstrType instrType, IRValue object, IRType targetType) {
         super(targetType, name, instrType);
         objectToConvert = object;
+        this.uses.add(objectToConvert);
     }
 
     public IRTypeCast(String name, IRInstrType instrType,
                       IRValue object, IRType targetType, String message) {
         super(targetType, name, instrType, message);
         objectToConvert = object;
+        this.uses.add(objectToConvert);
     }
 
     /**
@@ -82,6 +84,14 @@ public class IRTypeCast extends IRInstr {
                     annotate()
             );
         }
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.objectToConvert == value) {
+            this.objectToConvert = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     /**

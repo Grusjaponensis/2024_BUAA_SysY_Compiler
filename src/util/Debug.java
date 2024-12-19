@@ -5,7 +5,7 @@ public class Debug {
 
     public static final boolean STAGE_LEXER = false;
     public static final boolean STAGE_PARSER = false;
-    public static final boolean STAGE_OPTIMIZATION = false;
+    public static final boolean STAGE_OPTIMIZATION = true;
 
     public static final String TERM_RESET = "\u001B[0m";
     public static final String TERM_RED = "\u001B[1;31m";

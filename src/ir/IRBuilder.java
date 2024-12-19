@@ -73,6 +73,10 @@ public class IRBuilder {
         continueBlockStack.pop();
     }
 
+    public void optimize() {
+        irModule.optimize();
+    }
+
     public String generateIR(boolean forPrint) {
         return irModule.generateIR(forPrint);
     }

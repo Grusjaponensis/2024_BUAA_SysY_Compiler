@@ -4,6 +4,7 @@ import backend.instr.MIPSAscii;
 import backend.instr.MIPSByte;
 import backend.instr.MIPSWord;
 import frontend.token.StringLiteral;
+import ir.IRValue;
 import ir.constant.IRConst;
 import ir.constant.IRConstArray;
 import ir.constant.IRConstInt;
@@ -79,6 +80,9 @@ public class IRGlobal extends IRInstr {
             }
         }
     }
+
+    @Override
+    public boolean use(IRValue value) { return false; }
 
     /**
      * e.g. {@code %1 = global i32 1}

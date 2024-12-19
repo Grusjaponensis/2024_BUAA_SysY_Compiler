@@ -10,16 +10,18 @@ import ir.constant.IRConstInt;
 import ir.type.IRBasicType;
 
 public class IRPutInt extends IRInstr {
-    private final IRValue value;
+    private IRValue value;
 
     public IRPutInt(IRValue value) {
         super(IRBasicType.Void, "", IRInstrType.PutInt);
         this.value = value;
+        this.uses.add(value);
     }
 
     public IRPutInt(IRValue value, String message) {
         super(IRBasicType.Void, "", IRInstrType.PutInt, message);
         this.value = value;
+        this.uses.add(value);
     }
 
     @Override
@@ -32,6 +34,14 @@ public class IRPutInt extends IRInstr {
         }
         new MIPSLoadImm(Reg.v0, 1, annotate());
         new MIPSSyscall("putint()");
+    }
+
+    @Override
+    public void replaceUse(IRValue value, IRValue newValue) {
+        if (this.value == value) {
+            this.value = newValue;
+        }
+        this.uses.replaceAll(oldValue -> oldValue == value ? newValue : oldValue);
     }
 
     @Override
