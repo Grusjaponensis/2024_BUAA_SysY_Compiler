@@ -60,7 +60,7 @@ public class Compiler {
             Path errorFile = Paths.get("error.txt");
             Files.writeString(errorFile, ErrorCollector.getInstance().toString());
             System.out.println(Debug.TERM_RED + "errors: \n" + Debug.TERM_RESET + ErrorCollector.getInstance());
-            // return;
+            return;
         }
 
         // generate IR

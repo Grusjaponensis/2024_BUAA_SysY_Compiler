@@ -12,7 +12,7 @@ public class SymbolTable {
     private final HashMap<String, Symbol> symbolTable = new HashMap<>();
     private final SymbolTable parent;
     private final int depth;
-    private boolean isInLoop = false;
+    private Stack<Boolean> isInLoop = new Stack<>();
 
     private boolean isInFuncDefinition = false;
     private ValueType funcReturnType = null;
@@ -102,15 +102,15 @@ public class SymbolTable {
     /**
      * Enter a loop, marking the current context as within a loop.
      */
-    public void enterLoop() { isInLoop = true; }
+    public void enterLoop() { isInLoop.push(true); }
 
-    public void exitLoop() { isInLoop = false; }
+    public void exitLoop() { isInLoop.pop(); }
 
     /**
      * Check if the current context is inside a loop.
      * @return {@code true} if inside a loop, {@code false} otherwise.
      */
-    public boolean isInLoop() { return isInLoop; }
+    public boolean isInLoop() { return !isInLoop.empty(); }
 
     public int depth() { return depth; }
 
